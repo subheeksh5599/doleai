@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {PolicyRegistry} from "./PolicyRegistry.sol";
 
-/// @title AttestPay AssetToken
+/// @title DoleAI AssetToken
 /// @notice ERC-20 share token of a tokenized revenue pool. Minting and burning
 ///         are restricted to the pool contract. Every transfer is checked
 ///         against the pool's compliance policy (whitelist + per-holder cap).

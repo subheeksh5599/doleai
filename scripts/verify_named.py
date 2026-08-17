@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify an AttestPay contract on scan.bohr.life via the classic /api module=contract&action=verifysourcecode endpoint.
+"""Verify an DoleAI contract on scan.bohr.life via the classic /api module=contract&action=verifysourcecode endpoint.
 Usage: verify_named.py <address> <srcPath>:<ContractName>"""
 import urllib.request, urllib.parse, json, subprocess, sys, time
 

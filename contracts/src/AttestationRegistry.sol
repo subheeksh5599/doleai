@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title AttestPay AttestationRegistry
+/// @title DoleAI AttestationRegistry
 /// @notice On-chain audit trail for AI-agent decisions. The agent signs an
 ///         EIP-712 typed attestation off-chain and submits the hash here so
 ///         every distribution is provably linked to a verified decision and

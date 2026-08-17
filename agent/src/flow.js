@@ -106,7 +106,7 @@ export async function runCycle({ dryRun = false } = {}) {
     accrualPeriodDays: config.cycleDays,
     pool: config.pool,
     chainId: (await provider().getNetwork()).chainId.toString(),
-    verdictRequestedBy: "AttestPay verification policy",
+    verdictRequestedBy: "DoleAI verification policy",
     verdict,
   };
   const evidenceHash = evidenceHashOf(evidence);

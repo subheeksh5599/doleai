@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify an AttestPay contract on scan.bohr.life (Blockscout v2) via sourcify-style POST."""
+"""Verify an DoleAI contract on scan.bohr.life (Blockscout v2) via sourcify-style POST."""
 import json, sys, subprocess, urllib.request, urllib.error
 
 addr, src_path = sys.argv[1], sys.argv[2]

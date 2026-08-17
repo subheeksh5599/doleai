@@ -1,4 +1,4 @@
-// Minimal ABIs for AttestPay contracts + platform tokens. Addresses are
+// Minimal ABIs for DoleAI contracts + platform tokens. Addresses are
 // ALWAYS runtime config (env), never hardcoded here.
 
 export const POOL_ABI = [

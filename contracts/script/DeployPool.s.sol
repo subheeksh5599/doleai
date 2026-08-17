@@ -48,7 +48,7 @@ contract MintableToken {
     }
 }
 
-/// @notice Deploys an AttestPay pool. Reads config from env, never hardcodes:
+/// @notice Deploys an DoleAI pool. Reads config from env, never hardcodes:
 ///   ATTESTPAY_PAYMENT_TOKEN - WBOT (or any ERC20) address
 ///   ATTESTPAY_OWNER        - owner address
 ///   ATTESTPAY_AGENT        - authorized AI-agent signer address

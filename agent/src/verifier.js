@@ -42,7 +42,7 @@ export function decisionFromNumbers({ inflow, principal, ratePct, context }) {
 export async function verifyWithLLM(evidence) {
   const { baseUrl, key, model } = config.llm;
   if (!key) return null;
-  const sys = `You are the verification core of an on-chain revenue-distribution agent (AttestPay on BOT Chain).
+  const sys = `You are the verification core of an on-chain revenue-distribution agent (DoleAI on BOT Chain).
 Task: review the real income evidence and return ONLY a JSON object:
 {"approve": boolean, "reason": "approved|flagged|declined", "confidence": 0..1, "notes": [string...]}
 Rules: approve when the inflow is plausibly explained by the benchmark yield band and evidence integrity. Decline on anomaly (inflow far outside band, evidence hash mismatch, stale benchmark). Never invent numbers. Use only the evidence provided.`;

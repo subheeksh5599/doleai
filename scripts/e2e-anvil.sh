@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AttestPay local E2E against a fresh anvil: full cycle with the real agent CLI.
+# DoleAI local E2E against a fresh anvil: full cycle with the real agent CLI.
 # Usage: cd contracts && ../scripts/e2e-anvil.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -10,7 +10,7 @@ CONTRACTS="$ROOT/contracts"
 cd "$CONTRACTS"
 pkill -x anvil 2>/dev/null || true
 sleep 1
-anvil --port 8545 >/tmp/attestpay-anvil.log 2>&1 &
+anvil --port 8545 >/tmp/doleai-anvil.log 2>&1 &
 ANVIL_PID=$!
 sleep 2
 
@@ -33,8 +33,8 @@ export PRIVATE_KEY=$DEPLOYER_PK
 export RPC_URL=$RPC
 
 echo "== deploying =="
-forge script script/DeployPool.s.sol:DeployPool --rpc-url $RPC --broadcast >/tmp/attestpay-deploy.log 2>&1 || { tail -20 /tmp/attestpay-deploy.log; exit 1; }
-grep -E "Pool deployed|AssetToken|PolicyRegistry|AttestationRegistry|mock payment" /tmp/attestpay-deploy.log || true
+forge script script/DeployPool.s.sol:DeployPool --rpc-url $RPC --broadcast >/tmp/doleai-deploy.log 2>&1 || { tail -20 /tmp/doleai-deploy.log; exit 1; }
+grep -E "Pool deployed|AssetToken|PolicyRegistry|AttestationRegistry|mock payment" /tmp/doleai-deploy.log || true
 
 POOL=$(python3 - <<'EOF'
 import json

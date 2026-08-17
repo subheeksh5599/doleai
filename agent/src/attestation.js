@@ -14,7 +14,7 @@ const ATTESTATION_TYPES = {
 
 function domain(chainId, verifyingContract) {
   return {
-    name: "AttestPay",
+    name: "DoleAI",
     version: "1",
     chainId,
     verifyingContract,

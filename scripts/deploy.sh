@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy AttestPay to BOT Chain (testnet 968 or mainnet 677).
+# Deploy DoleAI to BOT Chain (testnet 968 or mainnet 677).
 # Usage: scripts/deploy.sh <testnet|mainnet>
 # Reads from repo .env: DEPLOYER_PK, AGENT (address), OWNER (address),
 # and network vars TESTNET_RPC/MAINNET_RPC + TESTNET_WBOT/MAINNET_WBOT.

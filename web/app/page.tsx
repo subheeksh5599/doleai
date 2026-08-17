@@ -116,7 +116,7 @@ export default function Page() {
     <main className="min-h-screen bg-[#0a0e14] text-zinc-100">
       <header className="border-b border-zinc-800/80 bg-[#0d1220] px-6 py-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-white">AttestPay</h1>
+          <h1 className="text-lg font-semibold tracking-tight text-white">DoleAI</h1>
           <p className="text-xs text-zinc-500 font-mono">AI-attested revenue distribution · BOT Chain · {networkId}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -150,7 +150,7 @@ export default function Page() {
               </Card>
               <Card className="bg-[#0d1220] border-zinc-800">
                 <CardHeader className="pb-2"><CardTitle className="text-xs font-normal text-zinc-400 uppercase tracking-wider">Shares outstanding</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-mono text-white">{state.totalSupply} <span className="text-sm text-zinc-400">APAY</span></CardContent>
+                <CardContent className="text-2xl font-mono text-white">{state.totalSupply} <span className="text-sm text-zinc-400">DOLET</span></CardContent>
               </Card>
               <Card className="bg-[#0d1220] border-zinc-800">
                 <CardHeader className="pb-2"><CardTitle className="text-xs font-normal text-zinc-400 uppercase tracking-wider">Holders</CardTitle></CardHeader>
@@ -172,7 +172,7 @@ export default function Page() {
               <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             </CardTitle>
             <CardDescription className="font-mono text-xs text-zinc-500">
-              Real transactions touching AttestPay contracts — each row opens in the explorer. Source: {config.explorerApi}
+              Real transactions touching DoleAI contracts — each row opens in the explorer. Source: {config.explorerApi}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">

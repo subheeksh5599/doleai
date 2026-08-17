@@ -1,7 +1,7 @@
 import { config } from "./config";
 
 // Keyless Blockscout v2 API (scan.botchain.ai mainnet, scan.bohr.life testnet).
-// Lists real transactions touching the AttestPay contracts.
+// Lists real transactions touching the DoleAI contracts.
 
 export interface TxnRow {
   hash: string;

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verify all AttestPay testnet contracts on scan.bohr.life (Blockscout) via
+# Verify all DoleAI testnet contracts on scan.bohr.life (Blockscout) via
 # forge, after configuring the chain in foundry.toml [etherscan] section.
 set -euo pipefail
 cd "$(dirname "$0")/../contracts"

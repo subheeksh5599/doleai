@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title AttestPay PolicyRegistry
-/// @notice Compliance layer for an AttestPay pool: whitelisted participants,
+/// @title DoleAI PolicyRegistry
+/// @notice Compliance layer for an DoleAI pool: whitelisted participants,
 ///         per-holder caps and a global pause. Controlled by the pool owner.
 ///         Consulted by AssetToken on every transfer. No hardcoded values.
 contract PolicyRegistry {

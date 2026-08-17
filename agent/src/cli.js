@@ -91,7 +91,7 @@ async function main() {
       break;
     }
     default:
-      console.log(`AttestPay agent CLI
+      console.log(`DoleAI agent CLI
   status                on-chain pool state
   run-cycle [--dry-run] detect inflow -> verify -> attest -> distribute
   onboard <addr>...     whitelist accounts (owner)

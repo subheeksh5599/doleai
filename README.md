@@ -1,14 +1,14 @@
-# AttestPay
+# DoleAI
 
 **AI-attested revenue distribution for tokenized asset pools on BOT Chain.**
 
-AttestPay is a revenue-distribution engine where an AI agent verifies real income events and executes prorata payouts on-chain. Issuers tokenize a revenue pool; investors hold shares; the agent checks every income inflow against a real macro benchmark, records a signed attestation on-chain, and pays every holder their exact share — in public, verifiable transactions on BOT Chain Mainnet.
+DoleAI is a revenue-distribution engine where an AI agent verifies real income events and executes prorata payouts on-chain. Issuers tokenize a revenue pool; investors hold shares; the agent checks every income inflow against a real macro benchmark, records a signed attestation on-chain, and pays every holder their exact share — in public, verifiable transactions on BOT Chain Mainnet.
 
 No simulated data, no hardcoded values, no fake transactions: every number in the product is a live on-chain read, and every payout is an explorer-verifiable transaction on chain 677.
 
 ## Why it exists
 
-The BOT Chain Builder Challenge #2 handbook lists "revenue distribution" as an RWA direction. BOT Chain's own infrastructure blog (Aug 2026) states in writing that no issuer, custodian, compliance or distribution infrastructure exists on the chain and "those functions must be supplied and verified separately." AttestPay is that missing distribution layer.
+The BOT Chain Builder Challenge #2 handbook lists "revenue distribution" as an RWA direction. BOT Chain's own infrastructure blog (Aug 2026) states in writing that no issuer, custodian, compliance or distribution infrastructure exists on the chain and "those functions must be supplied and verified separately." DoleAI is that missing distribution layer.
 
 ## The loop
 
@@ -34,7 +34,7 @@ issuer subscribes ──► investors buy shares (WBOT) ──► real income ar
 | Component | Address |
 |---|---|
 | Pool | _filled at deployment_ |
-| AssetToken (APAY) | _filled at deployment_ |
+| AssetToken (DOLET) | _filled at deployment_ |
 | PolicyRegistry | _filled at deployment_ |
 | AttestationRegistry | _filled at deployment_ |
 | Payment token | WBOT `0xD5452816194a3784dBa983426cCe7c122F4abd30` |

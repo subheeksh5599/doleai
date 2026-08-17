@@ -47,7 +47,7 @@ contract MockUSDT {
     }
 }
 
-contract AttestPayTest is Test {
+contract DoleAITest is Test {
     Pool pool;
     AssetToken apay;
     PolicyRegistry policy;

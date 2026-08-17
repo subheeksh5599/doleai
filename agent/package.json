@@ -1,9 +1,9 @@
 {
-  "name": "attestpay-agent",
+  "name": "doleai-agent",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AttestPay AI agent: verifies real income events and drives on-chain prorata distribution on BOT Chain",
+  "description": "DoleAI AI agent: verifies real income events and drives on-chain prorata distribution on BOT Chain",
   "scripts": {
     "status": "node src/cli.js status",
     "cycle": "node src/cli.js run-cycle",

@@ -11,7 +11,7 @@ interface IPaymentToken {
     function transferFrom(address, address, uint256) external returns (bool);
 }
 
-/// @title AttestPay Pool
+/// @title DoleAI Pool
 /// @notice Tokenized revenue pool on BOT Chain. Investors buy AssetToken
 ///         shares with a payment token (e.g. WBOT). The AI agent (authorized
 ///         signer) verifies income events off-chain, records an on-chain
@@ -98,7 +98,7 @@ contract Pool {
         // (human) so attestations remain append-only by the agent.
         policyRegistry = new PolicyRegistry(address(this));
         attestationRegistry = new AttestationRegistry(owner_);
-        assetToken = new AssetToken("AttestPay Revenue Share", "APAY", address(this), address(policyRegistry));
+        assetToken = new AssetToken("DoleAI Revenue Share", "DOLET", address(this), address(policyRegistry));
     }
 
     // ---------------------------------------------------------------------
