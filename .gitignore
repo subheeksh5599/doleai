@@ -8,3 +8,7 @@ contracts/out/
 contracts/broadcast/
 *.log
 .DS_Store
+
+# local-only
+DEMO_SCRIPT.md
+web/.env.local

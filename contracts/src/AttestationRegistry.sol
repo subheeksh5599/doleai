@@ -21,6 +21,7 @@ contract AttestationRegistry {
 
     address public owner;
     mapping(bytes32 => Attestation) public attestations;
+    bytes32[] public uids; // ordered index for off-chain enumeration
     uint256 public count;
 
     event AttestationRecorded(
@@ -81,6 +82,7 @@ contract AttestationRegistry {
             blockNumber: block.number,
             timestamp: block.timestamp
         });
+        uids.push(uid);
         count++;
         emit AttestationRecorded(uid, pool_, cycleId, grossAmount, evidenceHash, sourceRef, msg.sender, block.timestamp);
     }

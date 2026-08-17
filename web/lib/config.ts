@@ -1,5 +1,21 @@
-// Minimal ABIs for AttestPay contracts + platform tokens. Addresses are
-// ALWAYS runtime config (env), never hardcoded here.
+// Runtime configuration. All values come from NEXT_PUBLIC_* env vars; the app
+// renders nothing without them (fail-fast at startup).
+
+const req = (name: string) => {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing env var ${name}`);
+  return v;
+};
+
+export const config = {
+  rpcUrl: req("NEXT_PUBLIC_RPC_URL"),
+  poolAddress: req("NEXT_PUBLIC_POOL_ADDRESS"),
+  paymentToken: req("NEXT_PUBLIC_PAYMENT_TOKEN"),
+  agentAddress: process.env.NEXT_PUBLIC_AGENT_ADDRESS || "",
+  explorerApi: req("NEXT_PUBLIC_EXPLORER_API"),
+  explorerBase: req("NEXT_PUBLIC_EXPLORER_BASE"),
+  chainId: Number(req("NEXT_PUBLIC_CHAIN_ID")),
+};
 
 export const POOL_ABI = [
   "function assetToken() view returns (address)",
@@ -17,14 +33,8 @@ export const POOL_ABI = [
   "function subscribe(uint256)",
   "function buy(uint256)",
   "function redeem(uint256)",
-  "function distribute(uint256 grossAmount, uint256 cycleId, bytes32 attestationUid)",
   "function setWhitelisted(address, bool)",
   "function setHolderCap(address, uint256)",
-  "function setAgent(address)",
-  "function setPaused(bool)",
-  "event Issue(address indexed investor, uint256 shares, uint256 paid)",
-  "event Buy(address indexed investor, uint256 shares, uint256 paid)",
-  "event Redeem(address indexed investor, uint256 sharesReturned, uint256 payout)",
   "event DistributionExecuted(uint256 indexed id, uint256 indexed cycleId, uint256 grossAmount, uint256 totalPaid, uint256 recipientCount, bytes32 attestationUid)"
 ];
 
@@ -33,15 +43,10 @@ export const ASSET_ABI = [
   "function symbol() view returns (string)",
   "function decimals() view returns (uint8)",
   "function totalSupply() view returns (uint256)",
-  "function balanceOf(address) view returns (uint256)",
-  "function mint(address, uint256)",
-  "function burn(address, uint256)",
-  "function transfer(address, uint256) returns (bool)",
-  "function approve(address, uint256) returns (bool)"
+  "function balanceOf(address) view returns (uint256)"
 ];
 
-export const ATTESTATION_ABI = [
-  "function record(address pool, uint256 cycleId, uint256 grossAmount, bytes32 evidenceHash, string sourceRef) returns (bytes32 uid)",
+export const REGISTRY_ABI = [
   "function attestations(bytes32) view returns (bytes32 uid, address pool, uint256 cycleId, uint256 grossAmount, bytes32 evidenceHash, string sourceRef, address signer, uint256 blockNumber, uint256 timestamp)",
   "function uids(uint256) view returns (bytes32)",
   "function count() view returns (uint256)"
@@ -49,18 +54,14 @@ export const ATTESTATION_ABI = [
 
 export const POLICY_ABI = [
   "function whitelisted(address) view returns (bool)",
-  "function holderCap(address) view returns (uint256)",
-  "function isWhitelisted(address) view returns (bool)"
+  "function holderCap(address) view returns (uint256)"
 ];
 
 export const ERC20_ABI = [
   "function name() view returns (string)",
   "function symbol() view returns (string)",
   "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)",
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address, address) view returns (uint256)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function transfer(address to, uint256 amount) returns (bool)",
-  "function transferFrom(address from, address to, uint256 amount) returns (bool)"
+  "function balanceOf(address) view returns (uint256)"
 ];
+
+export const SHORT = (addr: string) => (addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : "—");
