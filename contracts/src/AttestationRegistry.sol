@@ -8,13 +8,13 @@ pragma solidity ^0.8.24;
 ///         a named data source. Anyone can verify signature + record.
 contract AttestationRegistry {
     struct Attestation {
-        bytes32 uid;          // keccak of pool+cycle
+        bytes32 uid; // keccak of pool+cycle
         address pool;
         uint256 cycleId;
-        uint256 grossAmount;  // income being recognized (payment token decimals)
+        uint256 grossAmount; // income being recognized (payment token decimals)
         bytes32 evidenceHash; // keccak of the parsed income evidence
-        string sourceRef;     // named real data source URI
-        address signer;       // agent signer address
+        string sourceRef; // named real data source URI
+        address signer; // agent signer address
         uint256 blockNumber;
         uint256 timestamp;
     }

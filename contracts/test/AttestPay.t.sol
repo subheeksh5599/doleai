@@ -196,7 +196,11 @@ contract AttestPayTest is Test {
         vm.stopPrank();
 
         vm.prank(issuer);
-        vm.expectRevert(abi.encodeWithSelector(AssetToken.TransferBlocked.selector, issuer, stranger, 10 ether, "recipient-not-whitelisted"));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                AssetToken.TransferBlocked.selector, issuer, stranger, 10 ether, "recipient-not-whitelisted"
+            )
+        );
         apay.transfer(stranger, 10 ether);
     }
 

@@ -164,11 +164,7 @@ contract Pool {
     /// @notice Pro-rata distribution of recognized income. Callable only by
     ///         the authorized agent signer. Requires a valid on-chain
     ///         attestation for the cycle recorded by the agent.
-    function distribute(uint256 grossAmount, uint256 cycleId, bytes32 attestationUid)
-        external
-        onlyAgent
-        whenNotPaused
-    {
+    function distribute(uint256 grossAmount, uint256 cycleId, bytes32 attestationUid) external onlyAgent whenNotPaused {
         if (grossAmount == 0) revert ZeroAmount();
         uint256 available = paymentBalance();
         if (available < grossAmount) revert ExceedsReserves(grossAmount, available);
@@ -268,8 +264,7 @@ contract Pool {
     }
 
     function _safeTransfer(address token, address to, uint256 amount) internal {
-        (bool ok, bytes memory ret) =
-            token.call(abi.encodeWithSelector(IPaymentToken.transfer.selector, to, amount));
+        (bool ok, bytes memory ret) = token.call(abi.encodeWithSelector(IPaymentToken.transfer.selector, to, amount));
         require(ok && (ret.length == 0 || abi.decode(ret, (bool))), "transfer failed");
     }
 
