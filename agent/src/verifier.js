@@ -70,12 +70,19 @@ Rules: approve when the inflow is plausibly explained by the benchmark yield ban
 }
 
 export async function verify({ inflow, inflowTxHash, principal, benchmarkRate, benchmarkDate }) {
+  const expected = (Number(principal) / 1e18) * expectedDailyRate(benchmarkRate);
+  const actual = Number(inflow) / 1e18;
+  const observedRatio = expected > 0 ? actual / expected : 0;
   const evidence = {
     inflowWei: inflow.toString(),
     inflowTxHash,
     principalWei: principal.toString(),
     benchmarkRatePct: benchmarkRate,
     benchmarkRecordDate: benchmarkDate,
+    benchmarkNote: "World Bank WDI US GDP growth, latest published year (dataset updated 2026-07-13)",
+    accrualPeriodDays: config.cycleDays,
+    expectedPeriodYieldWei: BigInt(Math.round(expected * 1e18)).toString(),
+    observedRatioVsBenchmark: Number(observedRatio.toFixed(4)),
     pool: config.pool,
     chainId: (await provider().getNetwork()).chainId.toString(),
   };
@@ -86,18 +93,22 @@ export async function verify({ inflow, inflowTxHash, principal, benchmarkRate, b
   } catch (e) {
     llm = { approve: true, reason: "llm-unavailable-fallback", confidence: 0.5, notes: [String(e.message || e)] };
   }
+  // Authority model: the deterministic policy is the executor — it blocks
+  // out-of-band inflows. The LLM is the auditor: its verdict and notes are
+  // recorded for the attestation trail and surfaced in the UI.
+  const llmApprove = llm ? Boolean(llm.approve) : true;
+  const notes = [...(llm ? llm.notes : []), ...numeric.notes];
   const verdict = {
-    approve: llm ? Boolean(llm.approve) : numeric.approve,
-    reason: llm ? (llm.reason || "approved") : numeric.reason,
-    confidence: llm ? Number(llm.confidence ?? 0.5) : numeric.confidence,
-    notes: (llm ? llm.notes : numeric.notes) || [],
-    engine: llm ? "llm" : "deterministic",
+    approve: numeric.approve,
+    reason: numeric.approve
+      ? (llmApprove ? numeric.reason : "approved-with-auditor-flag")
+      : numeric.reason,
+    confidence: numeric.approve ? Number(llm ? llm.confidence ?? 0.9 : 0.9) : numeric.confidence,
+    notes: notes.slice(0, 6),
+    engine: numeric.approve ? (llm ? "llm-audit" : "deterministic") : "deterministic",
+    expectedPeriodYieldWei: evidence.expectedPeriodYieldWei,
+    observedRatioVsBenchmark: evidence.observedRatioVsBenchmark,
   };
-  // Safety: the deterministic band check is the floor — an out-of-band inflow
-  // is NEVER approved even if the LLM says yes.
-  if (!numeric.approve && verdict.approve) {
-    return { ...verdict, approve: false, reason: "overridden-by-band-check", engine: "deterministic" };
-  }
   return verdict;
 }
 

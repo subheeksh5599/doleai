@@ -72,42 +72,45 @@ export async function runCycle({ dryRun = false } = {}) {
     return out;
   }
 
-  // 1. Real benchmark from US Treasury (keyless).
+  // 1. Real benchmark (World Bank WDI, keyless).
   const { pct, recordDate } = await fetchBenchmark();
   out.benchmarkRatePct = pct;
   out.benchmarkRecordDate = recordDate;
 
-  // 2. Verify (deterministic band + optional LLM).
+  // 2. Locate the real funding transaction that caused the inflow (last ERC20
+  //    transfer to the pool) — the verifiable evidence for verification.
+  let inflowTx = null;
+  try {
+    inflowTx = await findLastTransferToPool();
+  } catch { /* non-fatal */ }
+  if (inflowTx) out.inflowTxHash = inflowTx.hash ?? inflowTx;
+
+  // 3. Verify (deterministic band + optional LLM) against real evidence.
   const verdict = await verify({
     inflow,
-    inflowTxHash: "pending", // filled after CI detects the funding tx (see below)
+    inflowTxHash: inflowTx?.hash ?? "unknown",
     principal: snap.totalSupply,
     benchmarkRate: pct,
     benchmarkDate: recordDate,
   });
   out.verdict = verdict;
 
-  // Locate the real funding transaction that caused the inflow (last ERC20
-  // transfer to the pool). This provides the verifiable evidence tx.
-  let inflowTx = null;
-  try {
-    inflowTx = await findLastTransferToPool(snap);
-  } catch { /* non-fatal */ }
-  if (inflowTx) out.inflowTxHash = inflowTx;
-
   const cycleId = state.lastCycleId + 1;
   const evidence = {
     inflowWei: inflow.toString(),
-    inflowTxHash: inflowTx ?? "unknown",
+    inflowTxHash: inflowTx?.hash ?? "unknown",
     principalWei: snap.totalSupply.toString(),
     benchmarkRatePct: pct,
     benchmarkRecordDate: recordDate,
+    benchmarkNote: "World Bank WDI US GDP growth, latest published year (dataset updated 2026-07-13)",
+    accrualPeriodDays: config.cycleDays,
     pool: config.pool,
     chainId: (await provider().getNetwork()).chainId.toString(),
+    verdictRequestedBy: "AttestPay verification policy",
     verdict,
   };
   const evidenceHash = evidenceHashOf(evidence);
-  const sourceRef = `benchmark:${recordDate}|tx:${inflowTx ?? "unknown"}`;
+  const sourceRef = `benchmark:${recordDate}|tx:${inflowTx?.hash ?? "unknown"}`;
 
   if (!verdict.approve) {
     out.status = "declined";
