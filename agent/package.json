@@ -1,0 +1,20 @@
+{
+  "name": "attestpay-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AttestPay AI agent: verifies real income events and drives on-chain prorata distribution on BOT Chain",
+  "scripts": {
+    "status": "node src/cli.js status",
+    "cycle": "node src/cli.js run-cycle",
+    "onboard": "node src/cli.js onboard",
+    "buy": "node src/cli.js buy",
+    "redeem": "node src/cli.js redeem",
+    "fund-pool": "node src/cli.js fund-pool",
+    "wrap": "node src/cli.js wrap"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "dotenv": "^16.4.5"
+  }
+}
