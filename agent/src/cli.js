@@ -25,7 +25,7 @@ async function main() {
       log({
         pool: config.pool,
         paymentBalanceWBOT: formatEther(snap.paymentBalance),
-        totalSupplyAPAY: formatEther(snap.totalSupply),
+        totalSupplyDOLET: formatEther(snap.totalSupply),
         holders: snap.holders.map(h => ({ address: h.address, balance: formatEther(BigInt(h.balanceWei)) })),
         nextDistributionId: distCount.toString(),
         agent,
@@ -64,7 +64,7 @@ async function main() {
     }
     case "redeem": {
       const [addr, sharesEth] = args;
-      if (!addr || !sharesEth) throw new Error("usage: redeem <private-key> <sharesAPAY>");
+      if (!addr || !sharesEth) throw new Error("usage: redeem <private-key> <sharesDOLET>");
       const wallet = new Wallet(addr, provider());
       const pool = poolContract(wallet);
       const tx = await pool.redeem(parseEther(sharesEth));
@@ -95,8 +95,8 @@ async function main() {
   status                on-chain pool state
   run-cycle [--dry-run] detect inflow -> verify -> attest -> distribute
   onboard <addr>...     whitelist accounts (owner)
-  buy <pk> <amount>     investor purchase (WBOT -> APAY)
-  redeem <pk> <shares>  investor redemption (APAY -> WBOT)
+  buy <pk> <amount>     investor purchase (WBOT -> DOLET)
+  redeem <pk> <shares>  investor redemption (DOLET -> WBOT)
   fund-pool <pk> <amt>  real income: transfer WBOT into the pool
   wrap <amount>         wrap native BOT -> WBOT (agent wallet)
   state                 show agent state file`);
