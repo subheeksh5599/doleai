@@ -31,8 +31,8 @@ export function decisionFromNumbers({ inflow, principal, ratePct, context }) {
   const expected = (Number(principal) / 1e18) * expectedDailyRate(ratePct);
   const actual = Number(inflow) / 1e18;
   const ratio = expected > 0 ? actual / expected : 0;
-  if (ratio < config.minRatio) return { approve: false, reason: "below-band", confidence: 0.95 };
-  if (ratio > config.maxRatio) return { approve: false, reason: "above-band", confidence: 0.95 };
+  if (ratio < config.minRatio) return { approve: false, reason: "below-band", confidence: 0.95, notes: [] };
+  if (ratio > config.maxRatio) return { approve: false, reason: "above-band", confidence: 0.95, notes: [] };
   const anomalyNotes = [];
   if (ratio > config.maxRatio / 2) anomalyNotes.push("inflow-high");
   if (anomalyNotes.length) return { approve: true, reason: "within-band-with-flag", confidence: 0.8, notes: anomalyNotes };
@@ -97,7 +97,7 @@ export async function verify({ inflow, inflowTxHash, principal, benchmarkRate, b
   // out-of-band inflows. The LLM is the auditor: its verdict and notes are
   // recorded for the attestation trail and surfaced in the UI.
   const llmApprove = llm ? Boolean(llm.approve) : true;
-  const notes = [...(llm ? llm.notes : []), ...numeric.notes];
+  const notes = [...(llm ? (llm.notes || []) : []), ...(numeric.notes || [])];
   const verdict = {
     approve: numeric.approve,
     reason: numeric.approve

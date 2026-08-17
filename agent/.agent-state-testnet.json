@@ -1,0 +1,13 @@
+{
+  "lastPoolBalance": "8304000000000000000",
+  "lastCycleId": 1,
+  "events": [
+    {
+      "cycleId": 1,
+      "inflowWei": "4000000000000000",
+      "attestationTx": "0x881bd07b449c2cc8f0ddb6ee69883a9b0f143664f8c2893de3a4912c75267659",
+      "distributionTx": "0xe09f91571cad19fad35ccfb2b85aa966a64481aba569aa1c1e6e6122bc8e5b43",
+      "at": "2026-08-17T15:52:51.235Z"
+    }
+  ]
+}
