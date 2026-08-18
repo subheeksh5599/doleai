@@ -329,7 +329,7 @@ export default function HomePage() {
               Every balance, distribution, and attestation is a live BOT Chain read. Open any hash in the explorer and the money is there.
             </p>
             <div style={{ marginTop: "auto", paddingTop: 18 }}>
-              <span className="chip">live · chain 968</span>
+              <span className="chip">live · chain 677</span>
             </div>
           </div>
 

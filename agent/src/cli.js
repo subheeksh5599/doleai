@@ -22,6 +22,12 @@ async function main() {
         pool.owner(),
         pool.paused(),
       ]);
+      // Gas management: surface the signer balances so a low-gas condition is
+      // visible before any cycle is attempted (refill = plain BOT transfer).
+      const [agentGas, ownerGas] = await Promise.all([
+        provider().getBalance(agent),
+        provider().getBalance(owner),
+      ]);
       log({
         pool: config.pool,
         paymentBalanceWBOT: formatEther(snap.paymentBalance),
@@ -32,6 +38,11 @@ async function main() {
         owner,
         paused,
         attestationsRecorded: snap.attCount.toString(),
+        gasBOT: {
+          agent: formatEther(agentGas),
+          owner: formatEther(ownerGas),
+          note: "refill = native BOT transfer to the signer address",
+        },
       });
       break;
     }

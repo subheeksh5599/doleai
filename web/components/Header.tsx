@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrowserProvider, JsonRpcProvider, Contract, formatEther, formatUnits } from "ethers";
-import { NETWORKS, netCfg, type Network, type NetCfg } from "@/lib/networks";
+import { NETWORK, type NetCfg } from "@/lib/networks";
 import { useLocalStorageValue } from "@/lib/useClientState";
 
 const ERC20_BALANCE_ABI = [
@@ -50,6 +50,30 @@ export function useWallet() {
     if (!window.ethereum) return;
     const provider = new BrowserProvider(window.ethereum as never);
     const accounts = await provider.send("eth_requestAccounts", []);
+    // Enforce BOT Chain mainnet (chain 677) — no testnet fallback. If the
+    // wallet is on another chain, switch (or add) 677 before proceeding.
+    try {
+      const chainId = await provider.send("eth_chainId", []);
+      if (String(chainId).toLowerCase() !== "0x2a5") {
+        try {
+          await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2a5" }]);
+        } catch (e: unknown) {
+          if ((e as { code?: number })?.code === 4902) {
+            await provider.send("wallet_addEthereumChain", [
+              {
+                chainId: "0x2a5",
+                chainName: "BOT Chain Mainnet",
+                rpcUrls: ["https://rpc.botchain.ai"],
+                nativeCurrency: { name: "BOT", symbol: "BOT", decimals: 18 },
+                blockExplorerUrls: ["https://scan.botchain.ai"],
+              },
+            ]);
+          }
+        }
+      }
+    } catch {
+      // non-fatal: account is still surfaced; on-chain reads always use mainnet RPC
+    }
     setAccount(Array.isArray(accounts) && accounts.length ? String(accounts[0]) : null);
     setConnected(Array.isArray(accounts) && accounts.length > 0);
   }, []);
@@ -64,16 +88,15 @@ export function useWallet() {
 
 export function Header() {
   const { ready, connected, account, connect, disconnect } = useWallet();
-  const [network, setNetwork] = useState<Network>("testnet");
-  const cfg = netCfg(network);
+  const cfg = NETWORK;
 
-  // balances keyed by token symbol, recomputed on network/account change
+  // balances keyed by token symbol, recomputed on account change
   const [bal, setBal] = useState<Record<string, number>>({});
   useEffect(() => {
     let alive = true;
     if (!account) return;
     const provider = new JsonRpcProvider(cfg.rpcUrl, cfg.chainId, { staticNetwork: true });
-    const tokens = NETWORKS[network].tokens;
+    const tokens = NETWORK.tokens;
     (async () => {
       const out: Record<string, number> = {};
       for (const t of tokens) {
@@ -95,7 +118,7 @@ export function Header() {
     return () => {
       alive = false;
     };
-  }, [account, network, cfg.rpcUrl, cfg.chainId]);
+  }, [account, cfg.rpcUrl, cfg.chainId]);
 
   const btn: React.CSSProperties = {
     fontFamily: "var(--font-mono)",
@@ -145,7 +168,9 @@ export function Header() {
       </nav>
 
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-        <NetworkToggle network={network} onChange={setNetwork} />
+        <span className="label" style={{ color: "var(--loss)", fontSize: 10 }}>
+          ● mainnet 677
+        </span>
 
         {(!ready || !connected) && (
           <button style={btnPrimary} onClick={() => void connect()}>
@@ -158,51 +183,6 @@ export function Header() {
         )}
       </div>
     </header>
-  );
-}
-
-function NetworkToggle({ network, onChange }: { network: Network; onChange: (n: Network) => void }) {
-  return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-      <div
-        style={{
-          display: "inline-flex",
-          border: "1px solid var(--line-strong)",
-          borderRadius: "var(--radius)",
-          overflow: "hidden",
-        }}
-      >
-        {(["testnet", "mainnet"] as Network[]).map((n) => {
-          const on = network === n;
-          return (
-            <button
-              key={n}
-              onClick={() => onChange(n)}
-              title={n === "mainnet" ? "Live funds — BOT Chain mainnet (677)" : "Test funds — BOT Chain testnet (968)"}
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                padding: "5px 11px",
-                border: 0,
-                cursor: "pointer",
-                background: on ? (n === "mainnet" ? "var(--loss)" : "var(--ink)") : "transparent",
-                color: on ? "var(--bg)" : "var(--muted)",
-                transition: "background .2s, color .2s",
-              }}
-            >
-              {NETWORKS[n].label}
-            </button>
-          );
-        })}
-      </div>
-      {network === "mainnet" && (
-        <span className="label" style={{ color: "var(--loss)", fontSize: 10 }}>
-          ● live funds
-        </span>
-      )}
-    </div>
   );
 }
 
@@ -352,15 +332,6 @@ function WalletMenu({
             </div>
 
             <div style={{ height: 1, background: "var(--line)", margin: "2px 0" }} />
-
-            {cfg.faucet && (
-              <button
-                onClick={() => window.open(cfg.faucet, "_blank", "noopener,noreferrer")}
-                style={{ ...itemBtn, background: "var(--ink)", color: "var(--bg)", borderColor: "var(--ink)" }}
-              >
-                Faucet
-              </button>
-            )}
             <button onClick={onSignOut} style={{ ...itemBtn, color: "var(--loss)" }}>
               Sign out
             </button>

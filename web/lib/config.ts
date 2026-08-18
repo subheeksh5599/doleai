@@ -12,7 +12,7 @@ export const config = {
   agentAddress: process.env.NEXT_PUBLIC_AGENT_ADDRESS || "",
   explorerApi: process.env.NEXT_PUBLIC_EXPLORER_API || "",
   explorerBase: process.env.NEXT_PUBLIC_EXPLORER_BASE || "",
-  chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID) || 968,
+  chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID) || 677,
 };
 
 export const POOL_ABI = [
