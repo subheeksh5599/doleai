@@ -12,13 +12,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: install foundry
         run: |
-          V=v1.7.1
-          curl -fL --retry 3 --retry-delay 2 --max-time 240 \
-            "https://github.com/foundry-rs/foundry/releases/download/$V/foundry_${V#v}_linux_amd64.tar.gz" \
-            -o /tmp/f.tgz
-          ls -la /tmp/f.tgz
-          sudo tar -xzf /tmp/f.tgz -C /usr/local/bin
-          forge --version
+          curl -L https://foundry.paradigm.xyz -o /tmp/fi.sh
+          bash /tmp/fi.sh
+          foundryup --version stable
+          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+      - name: forge check
+        working-directory: contracts
+        run: forge --version
       - name: contracts build+test
         working-directory: contracts
         run: forge build --sizes && forge test -vvv
