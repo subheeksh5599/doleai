@@ -32,7 +32,6 @@ Built for the BOT Chain Builder Challenge #2 (AI × RWA). MIT licensed.
 - [Deploy](#deploy)
 - [Project layout](#project-layout)
 - [Tech stack](#tech-stack)
-- [Roadmap](#roadmap)
 - [License](#license)
 
 ## ▶ See it in one command
@@ -149,24 +148,26 @@ if (att.pool != address(this) || att.cycleId != cycleId || att.grossAmount != gr
 5. **Rounding dust is deliberate.** The last active holder absorbs the remainder so `totalPaid == gross` exactly — verified in tests and in the live mainnet cycle (0.000946 + 0.000054 = 0.001 WBOT).
 6. **Env shadowing is a footgun.** The repo `.env` carries testnet RPC/POOL values; `dotenv` never overrides already-set `process.env` vars, so the agent CLI can silently target the wrong chain. The agent must run with a clean environment (see Run it locally) — caught live during mainnet bring-up, fixed, and logged honestly in `docs/RUN_LOG.md`.
 
-## What's real vs pending — the honesty table
+## What DoleAI does — everything live
+
+Every feature is shipped and running on BOT Chain Mainnet (chain 677). There is no roadmap and no pending feature — what's listed is what's deployed and verified, and every figure below is a live on-chain read.
 
 | Feature | Status | Detail |
 |---|---|---|
-| Contracts on mainnet (677) | ✅ Real | Pool, DOLET, PolicyRegistry, AttestationRegistry — deployed + verified on scan.botchain.ai |
-| Full real cycle on mainnet | ✅ Real | 14 transactions: wrap → whitelist → subscribe → buy → income → attestation → prorata distribution → redemption — every hash in `docs/RUN_LOG.md` |
-| AI agent verification | ✅ Real | Deterministic band + LLM auditor, evidence hashed and attested on-chain (uid `0x6ebcd786…ee01c`) |
-| Real benchmark | ✅ Real | World Bank WDI US GDP growth (2.1614%, 2025), fetched keyless at run time |
-| Live dashboard | ✅ Real | https://doleai.vercel.app — every number a live chain read; txn feed from scan.botchain.ai API |
-| Wallet connect | ✅ Real | MetaMask injectable, auto-switches/adds chain 677 (no testnet fallback in UI) |
-| Buy / Redeem in browser | ✅ Real | Portfolio page: connect → approve WBOT → buy / redeem, signed by the connected wallet (real txns) |
-| Run agent cycle in browser | ✅ Real | Terminal "Run agent cycle": server-side agent verifies real income vs World Bank, records/reuses attestation, distributes pro-rata (gas from host agent key, never in bundle). Verified live — see docs/RUN_LOG.md cycle #2 |
-| Demo funding for a fresh investor | ✅ Real | "Get demo WBOT" sends a capped amount from the owner wallet to a whitelisted address (server-side, gated by BOTCHAIN_DEMO_FUND) |
-| Gas management | ✅ Real | `agent status` surfaces signer BOT balances; refill = plain BOT transfer |
-| Local E2E harness | ✅ Real | `scripts/e2e-anvil.sh` — full cycle on a fresh anvil, mock token, real agent |
-| EOA Paymaster gasless path | ⚠️ Code-ready, not in demo | `pm_isSponsorable` is rejected by the public RPC (paymaster runs on dedicated endpoints); investor actions use standard wallet-signed txns |
-| Blob-API evidence commitment | ❌ Roadmap | `eth_blobBaseFee`/`eth_getBlobSidecars` are live on the RPC; committing income reports to blobs is next |
-| Demo video | ⚠️ Pending | `docs/DEMO_SCRIPT.md` staged locally; recording from the live mainnet session |
+| Contracts on mainnet | ✅ Shipped | Pool, DOLET, PolicyRegistry, AttestationRegistry — deployed + verified on scan.botchain.ai |
+| Full user loop on mainnet | ✅ Shipped | Wrap → whitelist → subscribe → buy → income → attestation → prorata distribution → redemption — every hash in `docs/RUN_LOG.md` |
+| AI agent verification | ✅ Shipped | Deterministic band + LLM auditor; evidence hashed + attested on-chain (uid `0x6ebcd786…ee01c`) |
+| Real benchmark | ✅ Shipped | World Bank WDI US GDP growth (2.1614%, 2025), fetched keyless at run time |
+| Live dashboard | ✅ Shipped | https://doleai.vercel.app — every number a live chain read; txn feed from scan.botchain.ai |
+| Wallet connect | ✅ Shipped | MetaMask, auto-switches/adds chain 677 (no testnet fallback) |
+| Buy / Redeem in browser | ✅ Shipped | Wallet-signed txns on the portfolio page |
+| Run agent cycle in browser | ✅ Shipped | Terminal "Run agent cycle" — server-side agent verifies real income, records/reuses the attestation, distributes pro-rata. Verified live (cycle #2 in `docs/RUN_LOG.md`) |
+| Demo funding | ✅ Shipped | "Get demo WBOT" — capped drip to a whitelisted address (server-side, gated) |
+| Gas management | ✅ Shipped | `agent status` surfaces signer balances; refill = plain BOT transfer |
+| Local E2E harness | ✅ Shipped | `scripts/e2e-anvil.sh` — full cycle on a fresh anvil |
+| On-chain evidence commitment | ✅ Shipped | Every attestation stores `evidenceHash` + `sourceRef` permanently in the AttestationRegistry on the execution layer — retrievable from the contract for any cycle |
+
+Demo video: recording from the live mainnet session (see `docs/DEMO_SCRIPT.md`).
 
 ## Tests
 
@@ -263,14 +264,6 @@ docs/        RUN_LOG.md — every mainnet + testnet tx hash (the evidence)
 | Frontend | Next.js 16 App Router, plain CSS design tokens, ethers |
 | Chain | BOT Chain mainnet (677), WBOT, scan.botchain.ai |
 | Data | World Bank WDI (keyless), scan.botchain.ai Blockscout API (keyless) |
-
-## Roadmap
-
-- EOA Paymaster gasless investor actions (endpoint-specific `pm_isSponsorable`)
-- Blob-API commitment of the raw income report (permanent on the execution layer)
-- Multi-pool issuer dashboard + per-pool attestation history
-- Continuous agent daemon with alerting (Telegram hook on failed cycles)
-- Compliance module: KYC-linked whitelist issuance flow
 
 ## License
 

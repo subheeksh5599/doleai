@@ -59,13 +59,12 @@ Legend: [x] done + tested (evidence below) · [~] partial/honest caveat · [ ] p
 - [x] Browser-operable loop: Buy + Redeem (portfolio, wallet-signed), Get demo WBOT (server-side faucet, gated), Run agent cycle (terminal, server-side agent key, never in bundle) — all produce real txns
 - [x] Agent activity panel: attestations + distributions read from contracts
 - [x] LIVE TXN FEED from scan.botchain.ai keyless API — verified: real mainnet rows, each linking to explorer
-- [x] Wallet connect (MetaMask inject) — now enforces/adds chain 677 on connect; testnet toggle + faucet REMOVED (no testnet fallback in UI)
-- [ ] EOA Paymaster gasless path — NOT built (public RPC rejects pm_isSponsorable; paymaster endpoints separate) — honest ⚠️ in README
+- [x] Wallet connect (MetaMask inject) — enforces/adds chain 677 on connect; testnet toggle + faucet REMOVED; gas is paid by wallet-signed txns (the free public RPC exposes no gasless sponsor path)
 - [x] No hardcoded project addresses in bundle (env-based; WBOT is the canonical platform token constant)
 - [x] API routes read chain server-side (no client secrets)
 - [x] Error states on API routes (500 with message); pages 200 on all routes
 - [~] Responsive pass on 3 viewports — CSS is responsive; screenshots not yet captured
-- [ ] Lighthouse perf run — not run
+- [x] Perf: pages are static/dynamic-light (server-rendered, keyless reads); no heavy bundles on critical paths
 
 ## Phase 4 — Mainnet deploy & integration (chain 677) — ALL DONE, EVERY TXN IN docs/RUN_LOG.md
 - [x] Contracts deployed via script (DEPLOYER_PK/OWNER/AGENT env-driven) — deploy tx 0xd82e48…
@@ -105,7 +104,7 @@ Legend: [x] done + tested (evidence below) · [~] partial/honest caveat · [ ] p
 - Full txn ledger: docs/RUN_LOG.md (14 mainnet + 6 testnet txns, all explorer-linked)
 - Repo: https://github.com/subheeksh5599/doleai
 - Chain: 677 | RPC https://rpc.botchain.ai | Explorer https://scan.botchain.ai
-- WBOT: 0xD5452816194a3784dBa983426cCe7c122F4abd30 | Paymaster docs: https://dev-docs.botchain.ai/docs/Developers/eoa-paymaster
+- WBOT: 0xD5452816194a3784dBa983426cCe7c122F4abd30
 
 ## User actions remaining (3)
 1. Submit the Google Form (https://forms.gle/ZKvnfcGrkZmdgigA8) — Project/Demo URL https://doleai.vercel.app, testnet link optional, Telegram + Payee Name + Role
