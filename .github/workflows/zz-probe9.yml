@@ -1,0 +1,13 @@
+name: prober9
+
+on: [push]
+
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - name: envtest
+        run: echo "env ok"
+        env:
+          FOO: bar
+          NEXT_PUBLIC_CHAIN_ID: "677"
