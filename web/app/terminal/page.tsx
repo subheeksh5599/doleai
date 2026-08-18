@@ -39,9 +39,41 @@ const METHOD_LABEL: Record<Filter, string> = {
 const labelOf = (t: Txn): string => METHOD_LABEL[methodOf(t)] ?? (t.method || "transfer");
 
 export default function TerminalPage() {
-  const { state, txns, err, loading } = useDoleai();
+  const { state, txns, err, loading, refresh } = useDoleai();
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
+  const [agentBusy, setAgentBusy] = useState(false);
+  const [agentResult, setAgentResult] = useState<null | { ok: boolean; msg: string; [k: string]: unknown }>(null);
+
+  const runAgent = useMemo(() => () => void (async () => {
+    setAgentBusy(true);
+    setAgentResult(null);
+    try {
+      const res = await fetch("/api/cycle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        setAgentResult({ ok: false, msg: String(data.error || data.message || `HTTP ${res.status}`) });
+      } else {
+        setAgentResult({
+          ok: true,
+          msg: data.status === "distributed"
+            ? `attestation + distribution done for cycle ${data.cycleId}`
+            : data.message || data.status,
+          ...data,
+        });
+        // let the feed pick up the new txns
+        setTimeout(() => void refresh(), 1500);
+      }
+    } catch (e) {
+      setAgentResult({ ok: false, msg: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setAgentBusy(false);
+    }
+  })(), [refresh]);
 
   const shown = useMemo(() => {
     let all = txns ?? [];
@@ -105,6 +137,43 @@ export default function TerminalPage() {
             <span className="tnum" style={{ color: "var(--faint)", fontSize: 11 }}>
               {loading && !txns.length ? "…" : `${shown.length} events`}
             </span>
+          </div>
+
+          {/* run-the-agent action */}
+          <div className="panel scan" style={{ padding: "16px 20px", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div style={{ flex: "1 1 300px" }}>
+                <div className="label" style={{ color: "var(--ink)" }}>{"// run the agent"}</div>
+                <div className="label" style={{ color: "var(--faint)", fontSize: 10, marginTop: 4, lineHeight: 1.5 }}>
+                  The agent reads the pool, verifies a real income inflow against the World Bank benchmark, records a signed attestation, and executes the prorata distribution on-chain. Every step is a live transaction.
+                </div>
+              </div>
+              <button className="act" style={{ background: "var(--ink)", color: "var(--bg)", borderColor: "var(--ink)" }} onClick={() => void runAgent()} disabled={agentBusy}>
+                {agentBusy ? "Running…" : "Run agent cycle"}
+              </button>
+            </div>
+
+            {agentResult && (
+              <div className="panel" style={{ marginTop: 12, padding: "12px 14px", borderColor: agentResult.ok ? "var(--gain)" : "var(--loss)" }}>
+                <span className="label" style={{ color: agentResult.ok ? "var(--gain)" : "var(--loss)", wordBreak: "break-word" }}>
+                  {agentResult.ok ? "✓ " : "⚠ "}{agentResult.msg}
+                </span>
+                {agentResult.ok && (
+                  <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+                    {([
+                      ["attestation", agentResult.attestationTxUrl],
+                      ["distribution", agentResult.distributionTxUrl],
+                    ] as [string, unknown][]).map(([k, v]) =>
+                      typeof v === "string" && v ? (
+                        <a key={k} className="link label" style={{ fontSize: 11 }} href={v} target="_blank" rel="noreferrer">
+                          {k} ↗ {v.split("/").pop()}
+                        </a>
+                      ) : null
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* search + filters */}

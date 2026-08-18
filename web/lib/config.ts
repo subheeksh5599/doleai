@@ -31,6 +31,7 @@ export const POOL_ABI = [
   "function subscribe(uint256)",
   "function buy(uint256)",
   "function redeem(uint256)",
+  "function distribute(uint256 grossAmount, uint256 cycleId, bytes32 attestationUid)",
   "function setWhitelisted(address, bool)",
   "function setHolderCap(address, uint256)",
   "event DistributionExecuted(uint256 indexed id, uint256 indexed cycleId, uint256 grossAmount, uint256 totalPaid, uint256 recipientCount, bytes32 attestationUid)"
@@ -45,6 +46,7 @@ export const ASSET_ABI = [
 ];
 
 export const REGISTRY_ABI = [
+  "function record(address pool, uint256 cycleId, uint256 grossAmount, bytes32 evidenceHash, string sourceRef) returns (bytes32 uid)",
   "function attestations(bytes32) view returns (bytes32 uid, address pool, uint256 cycleId, uint256 grossAmount, bytes32 evidenceHash, string sourceRef, address signer, uint256 blockNumber, uint256 timestamp)",
   "function uids(uint256) view returns (bytes32)",
   "function count() view returns (uint256)"

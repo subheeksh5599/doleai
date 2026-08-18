@@ -28,6 +28,15 @@ Deployed pool: https://scan.botchain.ai/address/0x688D6d4f3769f219a40009108bC7c2
 | 13 | AI agent distribution (cycle 1, pro-rata 0.001 WBOT to 2 holders) | `0x73b46efcdf7e508440ce0ffff0528742d789b7d459e5d32b15f9cf217c95f446` | [tx](https://scan.botchain.ai/tx/0x73b46efcdf7e508440ce0ffff0528742d789b7d459e5d32b15f9cf217c95f446) |
 | 14 | Investor redemption 0.01 DOLET → 0.01 WBOT | `0xd5a0867b58bb8184d77822693a6a0597e74ee43119f4eb210e7f16c95d73d544` | [tx](https://scan.botchain.ai/tx/0xd5a0867b58bb8184d77822693a6a0597e74ee43119f4eb210e7f16c95d73d544) |
 
+### Browser-triggered cycle #2 (via the dashboard "Run agent cycle" action) — VERIFIED
+The site can now trigger a full live cycle from the browser (server-side action, no keys in the bundle):
+- Income inflow 0.0005 WBOT (real transfer to pool) | `0xdb2a62db23c58c2153c30cf0607d9366272b02482ce4d879897b3d86bb5ca012` | [tx](https://scan.botchain.ai/tx/0xdb2a62db23c58c2153c30cf0607d9366272b02482ce4d879897b3d86bb5ca012)
+- Agent attestation (cycle 2, reuse of deterministic uid `0xd5cfe12f…d15`, benchmark 2.1614%) | `0xa45b8149f8ff40…` | [tx](https://scan.botchain.ai/tx/0xa45b8149f8ff40)
+- Distribution (cycle 2, pro-rata 0.0005 WBOT to 2 holders) | `0x05884887b8ab7405821281e35c915e10b56a50cdc0625044040ed5a639a51be5` | [tx](https://scan.botchain.ai/tx/0x05884887b8ab7405821281e35c915e10b56a50cdc0625044040ed5a639a51be5)
+- Verified on-chain: distribution #2 gross=0.0005, paid=0.0005, 2 recipients, uid `0xd5cfe12f…`, executor=agent `0x1F6A…` (block 20092345). Pool returned to 0.73 WBOT after distribution.
+
+The cycle route (`/api/cycle`) is stateless: income = paymentBalance − totalSupply (principal), so it survives serverless cold starts and can never distribute principal. Attestation is idempotent (reuses the deterministic uid on AlreadyAttested).
+
 Cycle-1 verification (agent output, live): benchmark 2.1614% (World Bank WDI US GDP growth, 2025), expected period yield 306,738,589,953,856 wei, observed ratio 3.2601 → **approved (within-band)**, attestation recorded on-chain, distribution executed pro-rata (issuer 0.000946 WBOT, investor 0.000054 WBOT = 0.001 WBOT total).
 
 Gas accounting: 1 BOT grant received → 0.75 wrapped to WBOT (pool liquidity), ~0.15 BOT spent across 14 transactions, remainder in grant wallet.

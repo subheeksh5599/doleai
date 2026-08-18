@@ -55,7 +55,8 @@ Legend: [x] done + tested (evidence below) · [~] partial/honest caveat · [ ] p
 ## Phase 3 — Frontend (Next.js) 
 - [x] Rebranded DoleAI, dither/terminal design system, no leftover pages
 - [x] Landing: live data only, "live · chain 677" chip (was 968 — fixed)
-- [~] Issuer/investor dashboards: live chain-read pages (leaderboard, portfolio, allocations, per-holder dossiers) — admin actions (mint/caps/buy/redeem) run via the agent CLI, not in the browser UI
+- [~] Issuer/investor dashboards: live chain-read pages (leaderboard, portfolio, allocations, per-holder dossiers) — admin/mint/caps run via the agent CLI; buy/redeem/demo-fund/run-cycle are browser-operable
+- [x] Browser-operable loop: Buy + Redeem (portfolio, wallet-signed), Get demo WBOT (server-side faucet, gated), Run agent cycle (terminal, server-side agent key, never in bundle) — all produce real txns
 - [x] Agent activity panel: attestations + distributions read from contracts
 - [x] LIVE TXN FEED from scan.botchain.ai keyless API — verified: real mainnet rows, each linking to explorer
 - [x] Wallet connect (MetaMask inject) — now enforces/adds chain 677 on connect; testnet toggle + faucet REMOVED (no testnet fallback in UI)

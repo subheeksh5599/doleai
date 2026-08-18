@@ -53,6 +53,29 @@ export default function PortfolioPage() {
     [account, amount, signerFor],
   );
 
+  const fundDemo = useCallback(async () => {
+    if (!account) return setTxErr("Connect a wallet first");
+    setTxState("requesting demo WBOT…");
+    setTxErr("");
+    try {
+      const res = await fetch("/api/demofund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: account }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        setTxErr(String(data.error || data.message || `HTTP ${res.status}`));
+        setTxState("");
+        return;
+      }
+      setTxState(`received ${data.amountWBOT} WBOT · ${data.txUrl}`);
+    } catch (e) {
+      setTxErr(e instanceof Error ? e.message : String(e));
+      setTxState("");
+    }
+  }, [account]);
+
   // chart data from the live state
   const distPoints: DistPoint[] = useMemo(
     () =>
@@ -154,6 +177,9 @@ export default function PortfolioPage() {
             </button>
             <button className="act" onClick={() => void act("redeem")} disabled={!account}>
               Redeem
+            </button>
+            <button className="act" onClick={() => void fundDemo()} disabled={!account} title="receive demo WBOT to buy with (one-time, whitelisted only)">
+              Get demo WBOT
             </button>
           </div>
           <div className="label" style={{ marginTop: 16, lineHeight: 1.6, color: "var(--faint)" }}>

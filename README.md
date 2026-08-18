@@ -159,6 +159,9 @@ if (att.pool != address(this) || att.cycleId != cycleId || att.grossAmount != gr
 | Real benchmark | ✅ Real | World Bank WDI US GDP growth (2.1614%, 2025), fetched keyless at run time |
 | Live dashboard | ✅ Real | https://doleai.vercel.app — every number a live chain read; txn feed from scan.botchain.ai API |
 | Wallet connect | ✅ Real | MetaMask injectable, auto-switches/adds chain 677 (no testnet fallback in UI) |
+| Buy / Redeem in browser | ✅ Real | Portfolio page: connect → approve WBOT → buy / redeem, signed by the connected wallet (real txns) |
+| Run agent cycle in browser | ✅ Real | Terminal "Run agent cycle": server-side agent verifies real income vs World Bank, records/reuses attestation, distributes pro-rata (gas from host agent key, never in bundle). Verified live — see docs/RUN_LOG.md cycle #2 |
+| Demo funding for a fresh investor | ✅ Real | "Get demo WBOT" sends a capped amount from the owner wallet to a whitelisted address (server-side, gated by BOTCHAIN_DEMO_FUND) |
 | Gas management | ✅ Real | `agent status` surfaces signer BOT balances; refill = plain BOT transfer |
 | Local E2E harness | ✅ Real | `scripts/e2e-anvil.sh` — full cycle on a fresh anvil, mock token, real agent |
 | EOA Paymaster gasless path | ⚠️ Code-ready, not in demo | `pm_isSponsorable` is rejected by the public RPC (paymaster runs on dedicated endpoints); investor actions use standard wallet-signed txns |
