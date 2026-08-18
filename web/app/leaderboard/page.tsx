@@ -1,16 +1,27 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useDoleai, fmtTime, SHORT } from "@/lib/useDoleai";
 import { config } from "@/lib/config";
 
+type Sort = "balance" | "alpha";
+
 export default function LeaderboardPage() {
   const { state, txns, err, loading } = useDoleai();
+  const [sort, setSort] = useState<Sort>("balance");
+  const [query, setQuery] = useState("");
 
   const addrHref = (a: string) => `${config.explorerBase}/address/${a}`;
 
-  const holders = state?.holders ?? [];
-  // rank holders by balance desc (balance is a decimal string from the API)
-  const ranked = [...holders].sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
+  const ranked = useMemo(() => {
+    const holders = state?.holders ?? [];
+    let rows = [...holders];
+    if (sort === "balance") rows.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
+    else rows.sort((a, b) => a.address.localeCompare(b.address));
+    const q = query.trim().toLowerCase();
+    if (q) rows = rows.filter((h) => h.address.toLowerCase().includes(q));
+    return rows;
+  }, [state, sort, query]);
 
   return (
     <main className="mx-auto max-w-6xl px-6" style={{ padding: "clamp(40px, 6vw, 72px) 24px" }}>
@@ -214,14 +225,32 @@ export default function LeaderboardPage() {
       {/* holders leaderboard */}
       <section style={{ marginTop: 44 }}>
         <div className="label" style={{ marginBottom: 12 }}>
-          {"// holders · ranked by balance"}
+          {"// holders · ranked"}
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
+          <div className="term-search" style={{ flex: "1 1 220px" }}>
+            <span className="label" style={{ color: "var(--faint)" }}>⌕</span>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="search address…" />
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {(
+              [
+                ["balance", "by balance"],
+                ["alpha", "a–z"],
+              ] as [Sort, string][]
+            ).map(([k, label]) => (
+              <button key={k} className={`filter-pill ${sort === k ? "filter-on" : ""}`} style={{ fontSize: 11, padding: "7px 11px" }} onClick={() => setSort(k)}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="panel scan" style={{ overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table className="w-full" style={{ borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--line)", textAlign: "left" }}>
-                  {["#", "address", "shares", "status"].map((h) => (
+                  {["#", "holder", "shares", "status"].map((h) => (
                     <th key={h} className="label" style={{ padding: "12px 16px", color: "var(--faint)" }}>
                       {h}
                     </th>
@@ -242,8 +271,9 @@ export default function LeaderboardPage() {
                       {String(i + 1).padStart(2, "0")}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <a className="link" href={addrHref(h.address)} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
-                        {SHORT(h.address)}
+                      <a href={`/k/${h.address}`} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 10 }}>
+                        <span className="mini-avatar pixel" style={{ fontSize: 10 }}>{SHORT(h.address).slice(0, 2).toUpperCase()}</span>
+                        <span style={{ fontSize: 12, color: "var(--ink)" }}>{SHORT(h.address)}</span>
                       </a>
                     </td>
                     <td className="tnum" style={{ padding: "12px 16px", fontSize: 12, color: "var(--ink)" }}>{h.balance}</td>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BrowserProvider, Contract, parseEther } from "ethers";
 import { useDoleai, fmtTime, SHORT } from "@/lib/useDoleai";
 import { config, POOL_ABI, ERC20_ABI } from "@/lib/config";
 import { useWallet } from "@/components/Header";
+import { DistributionChart, CompositionDonut, type DistPoint } from "@/components/PortfolioCharts";
 
 export default function PortfolioPage() {
   const { state, err: dataErr, loading } = useDoleai();
@@ -51,6 +52,31 @@ export default function PortfolioPage() {
     },
     [account, amount, signerFor],
   );
+
+  // chart data from the live state
+  const distPoints: DistPoint[] = useMemo(
+    () =>
+      (state?.distributions ?? [])
+        .slice()
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .map((d) => ({
+          label: `#${d.id}`,
+          gross: parseFloat(d.grossAmount) || 0,
+          paid: parseFloat(d.totalPaid) || 0,
+        })),
+    [state],
+  );
+  const composition: { key: string; value: number }[] = useMemo(() => {
+    const holders = state?.holders ?? [];
+    if (!holders.length) return [{ key: "pool", value: 100 }];
+    const top = [...holders]
+      .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
+      .slice(0, 4)
+      .map((h) => ({ key: SHORT(h.address), value: parseFloat(h.balance) || 0 }));
+    const rest = holders.slice(4).reduce((s, h) => s + (parseFloat(h.balance) || 0), 0);
+    if (rest > 0) top.push({ key: "others", value: rest });
+    return top;
+  }, [state]);
 
   return (
     <main className="mx-auto max-w-6xl px-6" style={{ padding: "clamp(40px, 6vw, 72px) 24px" }}>
@@ -153,6 +179,51 @@ export default function PortfolioPage() {
               <span className="tnum" style={{ fontSize: 13, color: "var(--ink)" }}>
                 {v}
               </span>
+            </div>
+          ))}
+        </section>
+      </div>
+
+      {/* charts */}
+      <section style={{ marginTop: 40 }}>
+        <div className="label" style={{ marginBottom: 12 }}>
+          {"// distributions over time · gross vs paid"}
+        </div>
+        <div className="panel scan" style={{ padding: "20px 22px 12px" }}>
+          {distPoints.length === 0 ? (
+            <span className="label" style={{ color: "var(--faint)", display: "block", padding: "30px 0", textAlign: "center" }}>
+              no distributions recorded yet
+            </span>
+          ) : (
+            <DistributionChart data={distPoints} />
+          )}
+        </div>
+      </section>
+
+      <div style={{ display: "grid", gap: 28, gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", marginTop: 40 }}>
+        <section>
+          <div className="label" style={{ marginBottom: 12 }}>
+            {"// holder composition"}
+          </div>
+          <div className="panel scan" style={{ padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <CompositionDonut data={composition} />
+          </div>
+        </section>
+        <section className="panel scan" style={{ padding: "22px 26px" }}>
+          <div className="label" style={{ marginBottom: 14 }}>
+            {"// readout"}
+          </div>
+          {[
+            ["payment asset", state?.token.symbol ?? "—"],
+            ["pool reserves", loading ? "…" : `${state?.paymentBalance ?? "—"}`],
+            ["shares outstanding", loading ? "…" : state?.totalSupply ?? "—"],
+            ["holders", loading ? "…" : String(state?.holderCount ?? "—")],
+            ["agent", loading ? "…" : state ? SHORT(state.agent) : "—"],
+            ["paused", loading ? "…" : state ? String(state.paused) : "—"],
+          ].map(([k, v]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
+              <span className="label">{k}</span>
+              <span className="tnum" style={{ fontSize: 13, color: "var(--ink)" }}>{v}</span>
             </div>
           ))}
         </section>

@@ -46,7 +46,7 @@ Testnet (chain 968) deployment: _filled at deployment_ — see [docs/RUN_LOG.md]
 ```
 contracts/  Foundry: Pool, AssetToken, PolicyRegistry, AttestationRegistry (+ tests)
 agent/      Node + ethers: income verification, EIP-712 attestation, payout executor
-web/        Next.js dashboard — dither/terminal design system (BOT Chain live feed, attestations, holders leaderboard, buy/redeem)
+web/        Next.js dashboard — dither/terminal design system: landing, terminal live-feed, leaderboard, allocations (weights), portfolio (charts), per-holder dossiers (/k/[addr])
 scripts/    e2e-anvil.sh — full-cycle local E2E against a fresh anvil
 ```
 
