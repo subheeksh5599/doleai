@@ -12,3 +12,5 @@ contracts/broadcast/
 # local-only
 DEMO_SCRIPT.md
 web/.env.local
+.agent-state*
+agent/.agent-state*

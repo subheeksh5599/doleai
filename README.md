@@ -31,15 +31,15 @@ issuer subscribes ──► investors buy shares (WBOT) ──► real income ar
 
 ## Live contracts (BOT Chain Mainnet, chain 677)
 
-| Component | Address |
-|---|---|
-| Pool | _filled at deployment_ |
-| AssetToken (DOLET) | _filled at deployment_ |
-| PolicyRegistry | _filled at deployment_ |
-| AttestationRegistry | _filled at deployment_ |
-| Payment token | WBOT `0xD5452816194a3784dBa983426cCe7c122F4abd30` |
+| Component | Address | Verified |
+|---|---|---|
+| Pool | [`0x688D6d4f3769f219a40009108bC7c2ca4177c6fD`](https://scan.botchain.ai/address/0x688D6d4f3769f219a40009108bC7c2ca4177c6fD) | ✅ |
+| AssetToken (DOLET) | [`0x17a8e184A1D5FecCC4e9728DBCAeB6Cb17d96583`](https://scan.botchain.ai/address/0x17a8e184A1D5FecCC4e9728DBCAeB6Cb17d96583) | ✅ |
+| PolicyRegistry | [`0x79D4Ce1c7Df6E7C640Db46C17E8a4bE2585EF491`](https://scan.botchain.ai/address/0x79D4Ce1c7Df6E7C640Db46C17E8a4bE2585EF491) | ✅ |
+| AttestationRegistry | [`0xF442320f6d7FEC593Eb472856B89b1Cc2799eB41`](https://scan.botchain.ai/address/0xF442320f6d7FEC593Eb472856B89b1Cc2799eB41) | ✅ |
+| Payment token | WBOT `0xD5452816194a3784dBa983426cCe7c122F4abd30` | — |
 
-Testnet (chain 968) deployment: _filled at deployment_ — see [docs/RUN_LOG.md](docs/RUN_LOG.md) for every transaction hash.
+Testnet (chain 968) deployment: pool `0xd58afbba54c15ef2828f826e480ae63730967937` — see [docs/RUN_LOG.md](docs/RUN_LOG.md) for every transaction hash.
 
 ## Repository layout
 

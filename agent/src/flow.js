@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { Contract } from "ethers";
+import { Contract, Wallet } from "ethers";
 import { config, provider, agentWallet, ownerWallet } from "./config.js";
 import { POOL_ABI, ASSET_ABI, ATTESTATION_ABI, ERC20_ABI } from "./abis.js";
 import { fetchBenchmark, verify, evidenceHashOf } from "./verifier.js";
