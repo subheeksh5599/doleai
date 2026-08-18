@@ -14,3 +14,4 @@ DEMO_SCRIPT.md
 web/.env.local
 .agent-state*
 agent/.agent-state*
+.vercel
