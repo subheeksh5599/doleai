@@ -8,7 +8,7 @@ DoleAI is the missing distribution layer for RWA on BOT Chain: an AI agent watch
 
 ### ▶ Live at https://doleai.vercel.app
 
-[Live demo ↗](https://doleai.vercel.app) · [Contracts ↗](https://scan.botchain.ai/address/0x688D6d4f3769f219a40009108bC7c2ca4177c6fD) · [Architecture ↓](#architecture) · [Run it locally ↓](#run-it-locally)
+[Live demo ↗](https://doleai.vercel.app) · [Contracts ↗](https://scan.botchain.ai/address/0x7D8863B5B68Ae4E5D9848504C24109b2f944c07f) · [Architecture ↓](#architecture) · [Run it locally ↓](#run-it-locally)
 
 [![Live](https://img.shields.io/badge/Live-doleai.vercel.app-0A0A0A?style=flat-square)](https://doleai.vercel.app)
 [![Chain](https://img.shields.io/badge/BOT%20Chain-Mainnet%20677-9B5CFF?style=flat-square)](https://scan.botchain.ai)
@@ -45,16 +45,16 @@ Built for the BOT Chain Builder Challenge #2 (AI × RWA). MIT licensed.
 ## ▶ See it in one command
 
 ```bash
-cast call 0x688D6d4f3769f219a40009108bC7c2ca4177c6fD "paymentBalance()(uint256)" --rpc-url https://rpc.botchain.ai
+cast call 0x7D8863B5B68Ae4E5D9848504C24109b2f944c07f "paymentBalance()(uint256)" --rpc-url https://rpc.botchain.ai
 ```
 
 ```text
-730000000000000000
+300000000000000000
 ```
 
-That is the live pool balance on BOT Chain mainnet (chain 677) — 0.73 WBOT of
+That is the live pool balance on BOT Chain mainnet (chain 677) — 0.3 WBOT of
 principal, right now, no setup. The same address is verified on
-[scan.botchain.ai](https://scan.botchain.ai/address/0x688D6d4f3769f219a40009108bC7c2ca4177c6fD).
+[scan.botchain.ai](https://scan.botchain.ai/address/0x7D8863B5B68Ae4E5D9848504C24109b2f944c07f).
 
 ## Screenshots
 
@@ -245,7 +245,7 @@ npm install && npm run dev
 | Variable | Value |
 |---|---|
 | `NEXT_PUBLIC_RPC_URL` | `https://rpc.botchain.ai` |
-| `NEXT_PUBLIC_POOL_ADDRESS` | `0x688D6d4f3769f219a40009108bC7c2ca4177c6fD` |
+| `NEXT_PUBLIC_POOL_ADDRESS` | `0x7D8863B5B68Ae4E5D9848504C24109b2f944c07f` |
 | `NEXT_PUBLIC_PAYMENT_TOKEN` | `0xD5452816194a3784dBa983426cCe7c122F4abd30` |
 | `NEXT_PUBLIC_AGENT_ADDRESS` | `0x1F6AB228525928248db1F9Bb243B844B6e1f38f7` |
 | `NEXT_PUBLIC_EXPLORER_API` / `NEXT_PUBLIC_EXPLORER_BASE` | `https://scan.botchain.ai/api` / `https://scan.botchain.ai` |
