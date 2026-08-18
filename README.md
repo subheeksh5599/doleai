@@ -173,6 +173,7 @@ Every feature is shipped and running on BOT Chain Mainnet (chain 677). There is 
 | Contracts on mainnet | ✅ Shipped | Pool, DOLET, PolicyRegistry, AttestationRegistry — deployed + verified on scan.botchain.ai |
 | Full user loop on mainnet | ✅ Shipped | Wrap → whitelist → subscribe → buy → income → attestation → prorata distribution → redemption — every hash in `docs/RUN_LOG.md` |
 | AI agent verification | ✅ Shipped | Deterministic band + LLM auditor; evidence hashed + attested on-chain (uid `0x6ebcd786…ee01c`) |
+| Anti-fraud (blocks overstated income) | ✅ Shipped | Verified live: a >benchmark-band inflow is declined and NOT paid out. Test: 0.03 WBOT fake income → ratio 143× observed → `declined`, no distribution (tx `0x518c71f1…` in `docs/RUN_LOG.md`). The agent catches the lie, on-chain |
 | Real benchmark | ✅ Shipped | World Bank WDI US GDP growth (2.1614%, 2025), fetched keyless at run time |
 | Live dashboard | ✅ Shipped | https://doleai.vercel.app — every number a live chain read; txn feed from scan.botchain.ai |
 | Wallet connect | ✅ Shipped | MetaMask, auto-switches/adds chain 677 (no testnet fallback) |

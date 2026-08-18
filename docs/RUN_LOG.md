@@ -74,3 +74,11 @@ and the testnet whitelist pair
 0x3d65b79fcf6d758c114b45e30c107224d8229245df65893cc4b28860bf24b315).
 Root cause fixed (unset shadowing vars before running the agent); all mainnet
 transactions above were executed after the fix and are on chain 677.
+
+
+### Gasless / EOA Paymaster (Gap 3) — honest verdict: NOT ship-able on mainnet
+Verified conclusion, not an assumption:
+- The public RPC `https://rpc.botchain.ai` rejects ALL paymaster methods with `-32601 method does not exist`: `pm_isSponsorable`, `pm_prepay`, `pm_payForUserOp`, `eth_paymaster`.
+- No public paymaster host resolves (`pm.botchain.ai`, `paymaster.botchain.ai`, `auth-rpc.botchain.ai` all fail/DNS).
+- Per the chain's own docs, the EOA Paymaster is part of the paid BOT Chain gateway / Nodereal MegaFuel service (requires a paid API key).
+=> A self-hosted gasless sponsor is NOT possible on the free public endpoint. The alternative (EIP-2771 trusted forwarder) would require redeploying the Pool contract to use `_msgSender()` instead of `msg.sender`, which would break the live demo pool and cost the remaining gas. Decision: ship without gasless, and document this constraint honestly in the README — the free tier exposes no sponsor path, so investor actions use standard wallet-signed txns.
