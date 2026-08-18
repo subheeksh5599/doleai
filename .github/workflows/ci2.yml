@@ -12,9 +12,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: install foundry
         run: |
-          cd contracts
-          curl -L https://github.com/foundry-rs/foundry/releases/latest/download/foundry_stable_linux_amd64.tar.gz -o /tmp/f.tgz
-          tar -xzf /tmp/f.tgz -C /usr/local/bin
+          V=$(curl -s https://api.github.com/repos/foundry-rs/foundry/releases/latest | grep -oP '"tag_name":\s*"\K[^"]+')
+          echo "foundry version: $V"
+          curl -sL "https://github.com/foundry-rs/foundry/releases/download/$V/foundry_${V#v}_linux_amd64.tar.gz" -o /tmp/f.tgz
+          sudo tar -xzf /tmp/f.tgz -C /usr/local/bin
           forge --version
       - name: contracts build+test
         working-directory: contracts
