@@ -1,20 +1,18 @@
-// Runtime configuration. All values come from NEXT_PUBLIC_* env vars; the app
-// renders nothing without them (fail-fast at startup).
-
-const req = (name: string) => {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing env var ${name}`);
-  return v;
-};
+// Runtime configuration. All values come from NEXT_PUBLIC_* env vars. These must
+// be referenced with STATIC string keys (process.env.NEXT_PUBLIC_X) so the
+// bundler can statically substitute them into the client bundle — dynamic access
+// (process.env[name]) is NOT inlined in the browser and would come up empty.
+// Each read falls back to a safe default rather than throwing, so a page always
+// renders; server API routes validate the values they need on each call.
 
 export const config = {
-  rpcUrl: req("NEXT_PUBLIC_RPC_URL"),
-  poolAddress: req("NEXT_PUBLIC_POOL_ADDRESS"),
-  paymentToken: req("NEXT_PUBLIC_PAYMENT_TOKEN"),
+  rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || "",
+  poolAddress: process.env.NEXT_PUBLIC_POOL_ADDRESS || "",
+  paymentToken: process.env.NEXT_PUBLIC_PAYMENT_TOKEN || "",
   agentAddress: process.env.NEXT_PUBLIC_AGENT_ADDRESS || "",
-  explorerApi: req("NEXT_PUBLIC_EXPLORER_API"),
-  explorerBase: req("NEXT_PUBLIC_EXPLORER_BASE"),
-  chainId: Number(req("NEXT_PUBLIC_CHAIN_ID")),
+  explorerApi: process.env.NEXT_PUBLIC_EXPLORER_API || "",
+  explorerBase: process.env.NEXT_PUBLIC_EXPLORER_BASE || "",
+  chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID) || 968,
 };
 
 export const POOL_ABI = [
