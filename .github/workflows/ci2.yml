@@ -1,0 +1,43 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install foundry
+        run: |
+          cd contracts
+          curl -L https://github.com/foundry-rs/foundry/releases/latest/download/foundry_stable_linux_amd64.tar.gz -o /tmp/f.tgz
+          tar -xzf /tmp/f.tgz -C /usr/local/bin
+          forge --version
+      - name: contracts build+test
+        working-directory: contracts
+        run: forge build --sizes && forge test -vvv
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: web build
+        working-directory: web
+        run: npm ci && npx tsc --noEmit && npm run build
+
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: agent install
+        working-directory: agent
+        run: npm ci && node -e "import('ethers').then(()=>process.exit(0))"
