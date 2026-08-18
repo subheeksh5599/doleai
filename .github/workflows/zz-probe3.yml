@@ -1,0 +1,12 @@
+name: prober3
+
+on: [push]
+
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: forge
+        working-directory: contracts
+        run: forge --version
