@@ -14,9 +14,12 @@ jobs:
         run: |
           curl -L https://foundry.paradigm.xyz -o /tmp/fi.sh
           bash /tmp/fi.sh
-          export PATH="$HOME/.foundry/bin:$PATH"
+          # locate the foundryup binary wherever the installer put it
+          FUP=$(ls "$HOME/.foundry/bin/foundryup" 2>/dev/null || ls "$HOME/bin/foundryup" 2>/dev/null || find "$HOME" -maxdepth 3 -name foundryup -type f 2>/dev/null | head -1)
+          echo "foundryup at: $FUP"
+          export PATH="$(dirname "$FUP"):$PATH"
           foundryup --version stable
-          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+          echo "$(dirname "$FUP")" >> "$GITHUB_PATH"
       - name: forge check
         working-directory: contracts
         run: forge --version
