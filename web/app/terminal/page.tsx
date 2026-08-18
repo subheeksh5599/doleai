@@ -20,11 +20,23 @@ const FILTERS: { key: Filter; label: string }[] = [
 function methodOf(t: Txn): Filter {
   const m = (t.method || "").toLowerCase();
   if (m.includes("distribut")) return "distribute";
-  if (m.includes("attest")) return "attest";
+  if (m.includes("attest") || m === "record") return "attest"; // AttestationRegistry.record → Attest
   if (m === "buy" || m.includes("buy")) return "buy";
   if (m === "redeem" || m.includes("redeem")) return "redeem";
   return "all";
 }
+
+// Explorer labels the attestation tx by its contract method (AttestationRegistry.record).
+// Surface it as the product's name ("attest") so the filter + feed read correctly.
+const METHOD_LABEL: Record<Filter, string> = {
+  all: "transfer",
+  distribute: "distribute",
+  attest: "attest",
+  buy: "buy",
+  redeem: "redeem",
+};
+
+const labelOf = (t: Txn): string => METHOD_LABEL[methodOf(t)] ?? (t.method || "transfer");
 
 export default function TerminalPage() {
   const { state, txns, err, loading } = useDoleai();
@@ -136,7 +148,7 @@ export default function TerminalPage() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-                    <span className="tw-name" style={{ fontSize: 13 }}>{t.method || "transfer"}</span>
+                    <span className="tw-name" style={{ fontSize: 13 }}>{labelOf(t)}</span>
                     <span className="tw-src tnum" style={{ fontSize: 11 }}>
                       <a href={t.url} target="_blank" rel="noreferrer" style={{ color: "inherit" }}>{SHORT(t.hash)}↗</a>
                     </span>
