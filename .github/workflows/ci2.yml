@@ -8,13 +8,17 @@ permissions:
 jobs:
   contracts:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/foundry-rs/foundry:v1.7.1
     steps:
       - uses: actions/checkout@v4
-      - name: forge version
-        working-directory: contracts
-        run: forge --version
+      - name: install foundry (asset URL from API)
+        run: |
+          U=$(curl -s https://api.github.com/repos/foundry-rs/foundry/releases/latest \
+              | grep -oP '"browser_download_url":\s*"\K[^"]*linux_amd64\.tar\.gz' | head -1)
+          echo "asset: $U"
+          curl -fL --retry 3 --max-time 300 -o /tmp/f.tgz "$U"
+          ls -la /tmp/f.tgz
+          sudo tar -xzf /tmp/f.tgz -C /usr/local/bin
+          forge --version
       - name: contracts build+test
         working-directory: contracts
         run: forge build --sizes && forge test -vvv
