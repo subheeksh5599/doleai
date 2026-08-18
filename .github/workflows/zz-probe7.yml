@@ -1,0 +1,11 @@
+name: prober7
+
+on: [push, pull_request]
+
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ok
+        run: echo "pr trigger ok"
