@@ -1,15 +1,12 @@
 name: CI
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 
 permissions:
   contents: read
 
 jobs:
   contracts:
-    name: Contracts - forge test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +22,6 @@ jobs:
         run: forge test -vvv
 
   web:
-    name: Web - typecheck + build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +49,6 @@ jobs:
           NEXT_PUBLIC_CHAIN_ID: "677"
 
   agent:
-    name: Agent - install + load
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,8 +60,6 @@ jobs:
       - name: Install
         working-directory: agent
         run: npm ci
-      - name: Dependencies link (config fails fast on missing env - expected)
+      - name: Deps link
         working-directory: agent
-        run: |
-          node -e "import('ethers').then(()=>{console.log('ethers resolves');process.exit(0)})"
-          node -e "import('./src/verifier.js').then(()=>{console.log('agent modules import cleanly');process.exit(0)}).catch(e=>{console.log('expected env fail-fast:', String(e.message||e).split('\n')[0]);process.exit(0)})"
+        run: node -e "import('ethers').then(()=>{console.log('ethers ok');process.exit(0)})"
