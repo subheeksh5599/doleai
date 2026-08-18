@@ -1,0 +1,46 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install foundry (asset URL from API)
+        run: |
+          U=$(curl -s https://api.github.com/repos/foundry-rs/foundry/releases/latest \
+              | grep -oP '"browser_download_url":\s*"\K[^"]*linux_amd64\.tar\.gz' | head -1)
+          echo "asset: $U"
+          curl -fL --retry 3 --max-time 300 -o /tmp/f.tgz "$U"
+          ls -la /tmp/f.tgz
+          sudo tar -xzf /tmp/f.tgz -C /usr/local/bin
+          forge --version
+      - name: contracts build+test
+        working-directory: contracts
+        run: forge build --sizes && forge test -vvv
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: web build
+        working-directory: web
+        run: npm ci && npx tsc --noEmit && npm run build
+
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: agent install
+        working-directory: agent
+        run: npm ci && node -e "import('ethers').then(()=>process.exit(0))"
