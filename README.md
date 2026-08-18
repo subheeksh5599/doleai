@@ -8,7 +8,14 @@ DoleAI is the missing distribution layer for RWA on BOT Chain: an AI agent watch
 
 ### ▶ Live at https://doleai.vercel.app
 
-[Live demo ↗](https://doleai.vercel.app) · [Repo ↗](https://github.com/subheeksh5599/doleai) · [Architecture ↓](#architecture) · [Run it locally ↓](#run-it-locally)
+[Live demo ↗](https://doleai.vercel.app) · [Contracts ↗](https://scan.botchain.ai/address/0x688D6d4f3769f219a40009108bC7c2ca4177c6fD) · [Architecture ↓](#architecture) · [Run it locally ↓](#run-it-locally)
+
+[![Live](https://img.shields.io/badge/Live-doleai.vercel.app-0A0A0A?style=flat-square)](https://doleai.vercel.app)
+[![Chain](https://img.shields.io/badge/BOT%20Chain-Mainnet%20677-9B5CFF?style=flat-square)](https://scan.botchain.ai)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-7%2F7%20pass-green?style=flat-square)](https://github.com/subheeksh5599/doleai/actions)
+[![CI](https://img.shields.io/badge/CI-green?style=flat-square)](https://github.com/subheeksh5599/doleai/actions)
+[![Stack](https://img.shields.io/badge/Stack-Foundry%20·%20Next.js%20·%20Node-black?style=flat-square)](.)
 
 Built for the BOT Chain Builder Challenge #2 (AI × RWA). MIT licensed.
 
@@ -17,6 +24,7 @@ Built for the BOT Chain Builder Challenge #2 (AI × RWA). MIT licensed.
 ## Table of contents
 
 - [▶ See it in one command](#-see-it-in-one-command)
+- [Screenshots](#screenshots)
 - [The problem](#the-problem-doleai-solves)
 - [How DoleAI works](#how-doleai-works)
   - [1 · Read — real income arrives](#1--read--real-income-arrives)
@@ -47,6 +55,14 @@ cast call 0x688D6d4f3769f219a40009108bC7c2ca4177c6fD "paymentBalance()(uint256)"
 That is the live pool balance on BOT Chain mainnet (chain 677) — 0.73 WBOT of
 principal, right now, no setup. The same address is verified on
 [scan.botchain.ai](https://scan.botchain.ai/address/0x688D6d4f3769f219a40009108bC7c2ca4177c6fD).
+
+## Screenshots
+
+All three are real captures of the live mainnet app (https://doleai.vercel.app) — no mockups, no simulated data. Every number on screen is a live on-chain read or a real transaction from the explorer feed.
+
+| Landing | Portfolio — buy / redeem / demo-fund | Terminal — live activity feed |
+|---|---|---|
+| ![Landing](docs/media/landing.png) | ![Portfolio](docs/media/portfolio.png) | ![Terminal](docs/media/terminal.png) |
 
 ## The problem DoleAI solves
 
