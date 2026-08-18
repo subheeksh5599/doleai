@@ -1,0 +1,28 @@
+name: prober11
+
+on: [push]
+
+permissions:
+  contents: read
+
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: A
+        run: echo a
+
+  b:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: B
+        run: echo b
+
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: C
+        run: echo c
