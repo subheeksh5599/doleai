@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Install Foundry
+        run: |
+          curl -L https://foundry.paradigm.xyz | bash
+          foundryup --version stable
+          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
       - name: Forge build
         working-directory: contracts
         run: forge build --sizes
