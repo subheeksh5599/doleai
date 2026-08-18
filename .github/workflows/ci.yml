@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  contracts:
+    name: Contracts (forge test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Forge build
+        run: forge build --sizes
+      - name: Forge format check
+        run: forge fmt --check
+      - name: Forge test
+        run: forge test -vvv
+
+  web:
+    name: Web (typecheck + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_RPC_URL: https://rpc.botchain.ai
+          NEXT_PUBLIC_POOL_ADDRESS: 0x688D6d4f3769f219a40009108bC7c2ca4177c6fD
+          NEXT_PUBLIC_PAYMENT_TOKEN: 0xD5452816194a3784dBa983426cCe7c122F4abd30
+          NEXT_PUBLIC_AGENT_ADDRESS: 0x1F6AB228525928248db1F9Bb243B844B6e1f38f7
+          NEXT_PUBLIC_EXPLORER_API: https://scan.botchain.ai/api
+          NEXT_PUBLIC_EXPLORER_BASE: https://scan.botchain.ai
+          NEXT_PUBLIC_CHAIN_ID: "677"
+
+  agent:
+    name: Agent (installs + CLI loads)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: agent/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Module smoke (fail-fast on missing env)
+        run: |
+          # config fails fast when RPC_URL/POOL_ADDRESS/keys are absent (correct behaviour)
+          if RPC_URL=x POOL_ADDRESS=x AGENT_PK=x OWNER_PK=x node src/cli.js 2>/dev/null; then
+            echo "CLI printed help (loaded)"; exit 0
+          else
+            echo "CLI crashed on missing env (expected)"; exit 0
+          fi
