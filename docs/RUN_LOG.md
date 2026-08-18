@@ -37,6 +37,16 @@ The site can now trigger a full live cycle from the browser (server-side action,
 
 The cycle route (`/api/cycle`) is stateless: income = paymentBalance − totalSupply (principal), so it survives serverless cold starts and can never distribute principal. Attestation is idempotent (reuses the deterministic uid on AlreadyAttested).
 
+### Fraud-catch demonstration (agent blocked a fake oversized income) — VERIFIED
+A real on-chain test that the agent's verification catches overstated/fraudulent income instead of paying it out:
+
+- Fake income: 0.035 WBOT transferred into the pool as if it were revenue | `0x7f2f50fd7199611e8d0172d332cc68ee7c03eba0bae36f2e0e43b86472346cf7` | [tx](https://scan.botchain.ai/tx/0x7f2f50fd7199611e8d0172d332cc68ee7c03eba0bae36f2e0e43b86472346cf7)
+- Expected yield for principal 0.73 WBOT at the real World Bank benchmark (2.1614% annual): ~0.000043 WBOT
+- Agent's verdict: **DECLINED** — observed ratio 809.667× the expected yield, massively over the 25× band
+- On-chain result: **no attestation, no distribution** — the overstated income was blocked. Holders were never overpaid.
+
+This is the product's core anti-fraud property working live: a reported income that does not match the real market benchmark is blocked by the deterministic policy (executor) before any payout. The terminal UI shows this as a red "🛑 Agent BLOCKED the income" state, distinct from a normal approved+distributed cycle.
+
 Cycle-1 verification (agent output, live): benchmark 2.1614% (World Bank WDI US GDP growth, 2025), expected period yield 306,738,589,953,856 wei, observed ratio 3.2601 → **approved (within-band)**, attestation recorded on-chain, distribution executed pro-rata (issuer 0.000946 WBOT, investor 0.000054 WBOT = 0.001 WBOT total).
 
 Gas accounting: 1 BOT grant received → 0.75 wrapped to WBOT (pool liquidity), ~0.15 BOT spent across 14 transactions, remainder in grant wallet.
