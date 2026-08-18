@@ -8,19 +8,11 @@ permissions:
 jobs:
   contracts:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/foundry-rs/foundry:v1.7.1
     steps:
       - uses: actions/checkout@v4
-      - name: install foundry
-        run: |
-          curl -L https://foundry.paradigm.xyz -o /tmp/fi.sh
-          bash /tmp/fi.sh
-          # locate the foundryup binary wherever the installer put it
-          FUP=$(ls "$HOME/.foundry/bin/foundryup" 2>/dev/null || ls "$HOME/bin/foundryup" 2>/dev/null || find "$HOME" -maxdepth 3 -name foundryup -type f 2>/dev/null | head -1)
-          echo "foundryup at: $FUP"
-          export PATH="$(dirname "$FUP"):$PATH"
-          foundryup --version stable
-          echo "$(dirname "$FUP")" >> "$GITHUB_PATH"
-      - name: forge check
+      - name: forge version
         working-directory: contracts
         run: forge --version
       - name: contracts build+test
