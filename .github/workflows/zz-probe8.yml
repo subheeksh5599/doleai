@@ -1,0 +1,19 @@
+name: prober8
+
+on: [push]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build
+        working-directory: web
+        run: echo "build"
+        env:
+          NEXT_PUBLIC_RPC_URL: https://rpc.botchain.ai
+          NEXT_PUBLIC_POOL_ADDRESS: 0x688D6d4f3769f219a40009108bC7c2ca4177c6fD
+          NEXT_PUBLIC_CHAIN_ID: "677"
