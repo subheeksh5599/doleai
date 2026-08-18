@@ -1,312 +1,377 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { JsonRpcProvider, BrowserProvider, Contract, parseEther, formatEther } from "ethers";
-import { config, POOL_ABI, ERC20_ABI, SHORT } from "../lib/config";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { InteractiveDither } from "@/components/InteractiveDither";
+import { DitherArt } from "@/components/DitherArt";
 
-interface State {
-  poolAddress: string;
-  paymentBalance: string;
-  totalSupply: string;
-  holderCount: number;
-  owner: string;
-  agent: string;
-  paused: boolean;
-  token: { name: string; symbol: string; decimals: number; poolBalance: string };
-  holders: { address: string; balance: string; whitelisted: boolean; cap: string | null }[];
-  distributions: { id: number; cycleId: number; grossAmount: string; totalPaid: string; recipientCount: number; timestamp: number; attestationUid: string }[];
-  attestations: { uid: string; cycleId: number; grossAmount: string; sourceRef: string; signer: string; blockNumber: number; timestamp: number }[];
-}
+// DoleAI — AI-attested RWA revenue on BOT Chain. Same visual grammar as the
+// reference, re-themed to the real product: an AI agent attests real off-chain
+// income on-chain, then distributes to holders — evidence on the record.
 
-interface Txn {
-  hash: string;
-  from: string;
-  to: string;
-  method: string;
-  timestamp: string;
-  value: string;
-  url: string;
-}
+const EVIDENCE = [
+  {
+    n: "01",
+    k: "ATTEST",
+    t: "Every dollar, attested.",
+    shape: "signal" as const,
+    d: "The agent reads real income events from a named public source, verifies them, and signs an EIP-712 attestation on BOT Chain. The evidence is hashed and indexed — you can check the inference, not just the verdict.",
+  },
+  {
+    n: "02",
+    k: "DISTRIBUTE",
+    t: "Payouts execute on-chain.",
+    shape: "loop" as const,
+    d: "Verified gross distributes pro-rata to holders by the agent itself — idempotent, capped, and reproducible to the transaction. No spreadsheet, no trusted middleman rounding.",
+  },
+  {
+    n: "03",
+    k: "HOLD",
+    t: "Income you can actually track.",
+    shape: "arrows" as const,
+    d: "Buy shares with WBOT at face value and redeem principal pro-rata. Every balance, every distribution, every attestation is a live BOT Chain read — nothing simulated.",
+  },
+];
 
-function fmtTime(ts: number) {
-  return new Date(ts).toISOString().replace("T", " ").slice(0, 19) + " UTC";
-}
+const DEFAULT = {
+  heading: "THE INCOME IS ATTESTED.",
+  eyebrow: "// built on",
+  body:
+    "AI-attested revenue distribution for real-world assets. An agent verifies actual income from a named source, signs the evidence on BOT Chain, and pays holders — on the record, never a spreadsheet.",
+};
 
-export default function Page() {
-  const [state, setState] = useState<State | null>(null);
-  const [txns, setTxns] = useState<Txn[]>([]);
-  const [err, setErr] = useState("");
-  const [account, setAccount] = useState("");
-  const [amount, setAmount] = useState("1");
-  const [txState, setTxState] = useState("");
+// The BOT Chain layers DoleAI actually runs on.
+type Sponsor = "bot" | "evm" | "wbot";
+const SPONSOR_COPY: Record<Sponsor, { heading: string; eyebrow: string; body: string }> = {
+  bot: {
+    heading: "SETTLED IN BOT.",
+    eyebrow: "// why BOT Chain",
+    body:
+      "BOT Chain is an EVM L1 purpose-built for AI agents to transact. DoleAI's attestations and payouts run as real EVM transactions with the agent as a first-class signer — gas, state, and receipts on the chain.",
+  },
+  evm: {
+    heading: "A LEDGER THE AGENT WRITES TO.",
+    eyebrow: "// why a chain at all",
+    body:
+      "A spreadsheet silently edits itself. A ledger can't. Every income decision the agent makes is a signed, timestamped, replayable transaction — the record is the product, and the record is immutable.",
+  },
+  wbot: {
+    heading: "LIQUID, ON-CHAIN.",
+    eyebrow: "// why WBOT",
+    body:
+      "Holders buy and redeem in WBOT — the wrapped BOT used as the pool's payment asset. Liquidity is real erc-20 on-chain, and every buy, redeem, and distribution is provable to the transaction hash.",
+  },
+};
 
-  const refresh = useCallback(async () => {
-    try {
-      const [s, a] = await Promise.all([fetch("/api/state").then((r) => r.json()), fetch("/api/activity").then((r) => r.json())]);
-      if (s.error) setErr(s.error);
-      else setState(s);
-      if (a.error) setErr(a.error);
-      else setTxns(a.rows ?? []);
-    } catch (e: any) {
-      setErr(String(e.message || e));
-    }
-  }, []);
-
+// Types `text` in character by character whenever it changes (on hover).
+function Typewriter({ text, speed = 34 }: { text: string; speed?: number }) {
+  const [shown, setShown] = useState(text);
+  const first = useRef(true);
   useEffect(() => {
-    refresh();
-    const t = setInterval(refresh, 6000);
-    return () => clearInterval(t);
-  }, [refresh]);
-
-  const connect = useCallback(async () => {
-    if (!window.ethereum) return setErr("No wallet provider found (MetaMask required).");
-    try {
-      const provider = new BrowserProvider(window.ethereum as any);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      setAccount(accounts[0]);
-      setErr("");
-    } catch (e: any) {
-      setErr(String(e.message || e));
+    if (first.current) {
+      first.current = false;
+      setShown(text);
+      return;
     }
-  }, []);
+    setShown("");
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setShown(text.slice(0, i));
+      if (i >= text.length) window.clearInterval(id);
+    }, speed);
+    return () => window.clearInterval(id);
+  }, [text, speed]);
+  return (
+    <>
+      {shown}
+      <span className="tw-caret" aria-hidden />
+    </>
+  );
+}
 
-  const signerFor = useCallback(async () => {
-    if (!window.ethereum) throw new Error("No wallet provider");
-    const provider = new BrowserProvider(window.ethereum as any);
-    await provider.send("eth_requestAccounts", []);
-    return await provider.getSigner();
-  }, []);
-
-  const callBuy = useCallback(async (token: "buy" | "redeem") => {
-    if (!account) return setErr("Connect a wallet first");
-    setTxState("waiting for wallet signature…");
-    setErr("");
-    try {
-      const signer = await signerFor();
-      const pool = new Contract(config.poolAddress, POOL_ABI, signer);
-      const amt = parseEther(amount || "1");
-      let tx;
-      if (token === "buy") {
-        const erc = new Contract(config.paymentToken, ERC20_ABI, signer);
-        await (await erc.approve(config.poolAddress, amt)).wait();
-        tx = await pool.buy(amt);
-      } else {
-        tx = await pool.redeem(amt);
-      }
-      const receipt = await tx.wait();
-      setTxState(`tx ${receipt.hash} confirmed — ${token} complete`);
-      refresh();
-    } catch (e: any) {
-      setErr(String(e.shortMessage || e.message || e));
-      setTxState("");
-    }
-  }, [account, amount, refresh, signerFor]);
-
-  const networkId = `chain ${config.chainId}`;
-
-  const addrHref = (a: string) => `${config.explorerBase}/address/${a}`;
+export default function HomePage() {
+  const [hovered, setHovered] = useState<Sponsor | null>(null);
+  const active = hovered ? SPONSOR_COPY[hovered] : DEFAULT;
+  const swapKey = hovered ?? "default";
 
   return (
-    <main className="min-h-screen bg-[#0a0e14] text-zinc-100">
-      <header className="border-b border-zinc-800/80 bg-[#0d1220] px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-white">DoleAI</h1>
-          <p className="text-xs text-zinc-500 font-mono">AI-attested revenue distribution · BOT Chain · {networkId}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {account ? (
-            <>
-              <Badge variant="secondary" className="font-mono">{SHORT(account)}</Badge>
-              <Button size="sm" variant="outline" onClick={() => { setAccount(""); setTxState(""); }}>Disconnect</Button>
-            </>
-          ) : (
-            <Button size="sm" onClick={connect}>Connect wallet</Button>
-          )}
-        </div>
-      </header>
+    <main>
+      {/* ---- HERO ---- */}
+      <section className="relative overflow-hidden" style={{ minHeight: "min(92vh, 900px)", borderBottom: "1px solid var(--line)" }}>
+        <InteractiveDither className="absolute inset-0 h-full w-full" />
+        <div
+          className="absolute inset-0"
+          style={{
+            pointerEvents: "none",
+            background:
+              "linear-gradient(90deg, color-mix(in oklch, var(--bg) 82%, transparent) 0%, color-mix(in oklch, var(--bg) 42%, transparent) 34%, transparent 68%), linear-gradient(0deg, var(--bg), transparent 26%), linear-gradient(180deg, color-mix(in oklch, var(--bg) 45%, transparent), transparent 14%)",
+          }}
+        />
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-6" style={{ minHeight: "min(92vh, 900px)" }}>
+          <div className="pixel rise" style={{ animationDelay: "0ms", fontSize: 18, letterSpacing: "0.06em", color: "var(--ink)" }}>
+            <span className="kol">DO</span>LEAI
+            <span className="flick" style={{ color: "var(--ink)" }}>
+              _
+            </span>
+          </div>
 
-      <div className="mx-auto max-w-6xl px-6 py-6 flex flex-col gap-6">
-        {err && (
-          <Alert variant="destructive">
-            <AlertDescription className="font-mono text-xs break-all">{err}</AlertDescription>
-          </Alert>
-        )}
+          <h1
+            className="rise"
+            style={{
+              animationDelay: "80ms",
+              fontSize: "clamp(44px, 9vw, 116px)",
+              margin: "18px 0 0",
+              lineHeight: 0.94,
+              minHeight: "1.88em",
+              maxWidth: "16ch",
+            }}
+          >
+            <Typewriter text={active.heading} />
+          </h1>
 
-        {/* Stats */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {!state ? (
-            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl bg-zinc-800/60" />)
-          ) : (
-            <>
-              <Card className="bg-[#0d1220] border-zinc-800">
-                <CardHeader className="pb-2"><CardTitle className="text-xs font-normal text-zinc-400 uppercase tracking-wider">Pool reserves</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-mono text-white">{state.paymentBalance} <span className="text-sm text-zinc-400">{state.token.symbol}</span></CardContent>
-              </Card>
-              <Card className="bg-[#0d1220] border-zinc-800">
-                <CardHeader className="pb-2"><CardTitle className="text-xs font-normal text-zinc-400 uppercase tracking-wider">Shares outstanding</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-mono text-white">{state.totalSupply} <span className="text-sm text-zinc-400">DOLET</span></CardContent>
-              </Card>
-              <Card className="bg-[#0d1220] border-zinc-800">
-                <CardHeader className="pb-2"><CardTitle className="text-xs font-normal text-zinc-400 uppercase tracking-wider">Holders</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-mono text-white">{state.holderCount}</CardContent>
-              </Card>
-              <Card className="bg-[#0d1220] border-zinc-800">
-                <CardHeader className="pb-2"><CardTitle className="text-xs font-normal text-zinc-400 uppercase tracking-wider">Distributions</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-mono text-white">{state.distributions.length}</CardContent>
-              </Card>
-            </>
-          )}
-        </section>
+          <p
+            className="rise"
+            style={{
+              animationDelay: "180ms",
+              maxWidth: "54ch",
+              marginTop: 22,
+              minHeight: "5.4em",
+              color: hovered ? "var(--ink)" : "var(--muted)",
+              fontSize: 15,
+              lineHeight: 1.6,
+              transition: "color 0.2s var(--ease-out-quart)",
+            }}
+          >
+            <span key={swapKey} className="hero-swap">
+              {active.body}
+            </span>
+          </p>
 
-        {/* Live transaction feed — the showpiece */}
-        <Card className="bg-[#0d1220] border-zinc-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Live chain activity
-              <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            </CardTitle>
-            <CardDescription className="font-mono text-xs text-zinc-500">
-              Real transactions touching DoleAI contracts — each row opens in the explorer. Source: {config.explorerApi}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="max-h-96 overflow-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-[#0d1220] text-zinc-500 text-xs uppercase tracking-wider">
-                  <tr>
-                    <th className="px-4 py-2 text-left">txn</th>
-                    <th className="px-4 py-2 text-left">age</th>
-                    <th className="px-4 py-2 text-left">from</th>
-                    <th className="px-4 py-2 text-left">to</th>
-                    <th className="px-4 py-2 text-left">action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/60">
-                  {txns.length === 0 && (
-                    <tr><td colSpan={5} className="px-4 py-6 text-center text-zinc-600 font-mono text-xs">awaiting first transactions…</td></tr>
-                  )}
-                  {txns.map((t) => (
-                    <tr key={t.hash} className="hover:bg-zinc-800/30">
-                      <td className="px-4 py-2 font-mono text-xs">
-                        <a href={t.url} target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">{SHORT(t.hash)}↗</a>
-                      </td>
-                      <td className="px-4 py-2 text-xs text-zinc-400">{t.timestamp ? new Date(t.timestamp).toISOString().replace("T", " ").slice(5, 19) : "—"}</td>
-                      <td className="px-4 py-2 font-mono text-xs text-zinc-400">{t.from ? <a className="hover:underline text-zinc-300" target="_blank" rel="noreferrer" href={addrHref(t.from)}>{SHORT(t.from)}</a> : "—"}</td>
-                      <td className="px-4 py-2 font-mono text-xs text-zinc-400">{t.to ? <a className="hover:underline text-zinc-300" target="_blank" rel="noreferrer" href={addrHref(t.to)}>{SHORT(t.to)}</a> : "—"}</td>
-                      <td className="px-4 py-2 font-mono text-xs">{t.method || "transfer"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <Link
+            href="/leaderboard"
+            className="rise hero-ext"
+            style={{
+              animationDelay: "250ms",
+              marginTop: 22,
+              width: "fit-content",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "7px 13px 7px 11px",
+              border: "1px solid var(--line-strong)",
+              borderRadius: 999,
+              fontFamily: "var(--font-mono, ui-monospace)",
+              fontSize: 12,
+              letterSpacing: "0.01em",
+              color: "var(--muted)",
+              textDecoration: "none",
+            }}
+          >
+            <span aria-hidden style={{ color: "var(--signal)", fontSize: 13 }}>
+              ◇
+            </span>
+            <span>watch the live attestation feed</span>
+            <span aria-hidden style={{ color: "var(--faint)" }}>
+              ↗
+            </span>
+          </Link>
+
+          <div className="rise" style={{ animationDelay: "360ms", marginTop: 30 }}>
+            <div className="label" style={{ marginBottom: 14, color: hovered ? "var(--ink)" : "var(--faint)", transition: "color 0.2s" }}>
+              <span key={swapKey} className="hero-swap">
+                {active.eyebrow}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Investors */}
-          <Card className="bg-[#0d1220] border-zinc-800">
-            <CardHeader>
-              <CardTitle>Participate</CardTitle>
-              <CardDescription className="text-xs text-zinc-500">Buy shares with {state?.token.symbol ?? "WBOT"} at face value, or redeem principal pro-rata. Both are real transactions on chain {config.chainId}.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Input type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} className="bg-zinc-900 border-zinc-700 font-mono" placeholder="amount" />
-                <Button onClick={() => callBuy("buy")} disabled={!account}>Buy</Button>
-                <Button variant="outline" onClick={() => callBuy("redeem")} disabled={!account}>Redeem</Button>
-              </div>
-              {!account && <p className="text-xs text-zinc-600">Connect a wallet (MetaMask, chain {config.chainId}) to transact.</p>}
-              {txState && <p className="text-xs font-mono text-emerald-400 break-all">{txState}</p>}
-            </CardContent>
-          </Card>
-
-          {/* Holders */}
-          <Card className="bg-[#0d1220] border-zinc-800">
-            <CardHeader><CardTitle>Holders</CardTitle></CardHeader>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
-                <thead className="text-zinc-500 text-xs uppercase tracking-wider">
-                  <tr><th className="px-4 py-2 text-left">address</th><th className="px-4 py-2 text-left">shares</th><th className="px-4 py-2 text-left">status</th></tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/60">
-                  {!state && <tr><td colSpan={3} className="px-4 py-4 text-center text-zinc-600 font-mono text-xs">loading…</td></tr>}
-                  {state?.holders.map((h) => (
-                    <tr key={h.address} className="hover:bg-zinc-800/30">
-                      <td className="px-4 py-2 font-mono text-xs"><a className="hover:underline text-zinc-300" target="_blank" rel="noreferrer" href={addrHref(h.address)}>{SHORT(h.address)}</a></td>
-                      <td className="px-4 py-2 font-mono text-xs">{h.balance}</td>
-                      <td className="px-4 py-2"><Badge variant={h.whitelisted ? "default" : "destructive"} className="text-[10px]">{h.whitelisted ? "whitelisted" : "blocked"}</Badge></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-
-          {/* Distributions */}
-          <Card className="bg-[#0d1220] border-zinc-800">
-            <CardHeader><CardTitle>Distributions</CardTitle><CardDescription className="text-xs text-zinc-500">Prorata payouts executed by the agent on-chain</CardDescription></CardHeader>
-            <CardContent className="p-0">
-              <div className="max-h-64 overflow-auto">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-[#0d1220] text-zinc-500 text-xs uppercase tracking-wider">
-                    <tr><th className="px-4 py-2 text-left">#</th><th className="px-4 py-2 text-left">cycle</th><th className="px-4 py-2 text-left">gross</th><th className="px-4 py-2 text-left">paid</th><th className="px-4 py-2 text-left">receivers</th><th className="px-4 py-2 text-left">time (UTC)</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-800/60">
-                    {!state && <tr><td colSpan={6} className="px-4 py-4 text-center text-zinc-600 font-mono text-xs">loading…</td></tr>}
-                    {state?.distributions.map((d) => (
-                      <tr key={d.id} className="hover:bg-zinc-800/30">
-                        <td className="px-4 py-2 font-mono text-xs">{d.id}</td>
-                        <td className="px-4 py-2 font-mono text-xs">{d.cycleId}</td>
-                        <td className="px-4 py-2 font-mono text-xs">{d.grossAmount}</td>
-                        <td className="px-4 py-2 font-mono text-xs text-emerald-400">{d.totalPaid}</td>
-                        <td className="px-4 py-2 text-xs">{d.recipientCount}</td>
-                        <td className="px-4 py-2 text-xs text-zinc-500">{fmtTime(d.timestamp)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Attestations */}
-          <Card className="bg-[#0d1220] border-zinc-800">
-            <CardHeader><CardTitle>Agent attestations</CardTitle><CardDescription className="text-xs text-zinc-500">On-chain records of the AI agent's verified income decisions (signed, evidence-hashed)</CardDescription></CardHeader>
-            <CardContent className="p-0">
-              <div className="max-h-64 overflow-auto">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-[#0d1220] text-zinc-500 text-xs uppercase tracking-wider">
-                    <tr><th className="px-4 py-2 text-left">cycle</th><th className="px-4 py-2 text-left">gross</th><th className="px-4 py-2 text-left">signer</th><th className="px-4 py-2 text-left">source</th><th className="px-4 py-2 text-left">block</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-800/60">
-                    {!state && <tr><td colSpan={5} className="px-4 py-4 text-center text-zinc-600 font-mono text-xs">loading…</td></tr>}
-                    {state?.attestations.map((a) => (
-                      <tr key={a.uid} className="hover:bg-zinc-800/30">
-                        <td className="px-4 py-2 font-mono text-xs">{a.cycleId}</td>
-                        <td className="px-4 py-2 font-mono text-xs">{a.grossAmount}</td>
-                        <td className="px-4 py-2 font-mono text-xs"><a className="hover:underline text-zinc-300" target="_blank" rel="noreferrer" href={addrHref(a.signer)}>{SHORT(a.signer)}</a></td>
-                        <td className="px-4 py-2 font-mono text-xs text-zinc-500 max-w-40 truncate" title={a.sourceRef}>{a.sourceRef}</td>
-                        <td className="px-4 py-2 font-mono text-xs text-zinc-500">{a.blockNumber}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+            <div style={{ display: "flex", alignItems: "center", gap: 40, flexWrap: "wrap" }}>
+              {(
+                [
+                  ["bot", "BOT CHAIN"],
+                  ["evm", "EVM"],
+                  ["wbot", "WBOT"],
+                ] as const
+              ).map(([key, label]) => (
+                <span
+                  key={key}
+                  className="sponsor-word"
+                  title={label}
+                  onMouseEnter={() => setHovered(key)}
+                  onMouseLeave={() => setHovered(null)}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 15,
+                    letterSpacing: "0.08em",
+                    cursor: "pointer",
+                    color: hovered === key ? "var(--ink)" : "var(--faint)",
+                    transition: "color .2s",
+                  }}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <footer className="border-t border-zinc-800/60 pt-4 pb-8 text-xs text-zinc-600 font-mono">
-          <p>pool: {state?.poolAddress ?? config.poolAddress} · agent key: {state ? SHORT(state.agent) : "…"} · all numbers above are live on-chain reads; no simulated data</p>
-          <p className="mt-1">Explorer: <a className="text-sky-500 hover:underline" href={config.explorerBase} target="_blank" rel="noreferrer">{config.explorerBase}</a></p>
-        </footer>
-      </div>
+        <div className="label" style={{ position: "absolute", bottom: 20, left: 0, right: 0, textAlign: "center", zIndex: 10 }}>
+          ↓ scroll to the mechanics
+        </div>
+      </section>
+
+      {/* ---- EVIDENCE ---- */}
+      <section className="mx-auto max-w-6xl px-6" style={{ padding: "clamp(64px, 12vw, 140px) 24px" }}>
+        <div className="label" style={{ marginBottom: 10 }}>
+          {"// how the ledger works"}
+        </div>
+        <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", maxWidth: "18ch" }}>
+          Proven by evidence, never by opinion.
+        </h2>
+        <div
+          style={{
+            marginTop: 56,
+            display: "grid",
+            gap: 1,
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            background: "var(--line)",
+            border: "1px solid var(--line)",
+          }}
+        >
+          {EVIDENCE.map((e) => (
+            <div key={e.n} className="scan" style={{ background: "var(--bg)", padding: "28px 26px 34px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span className="pixel" style={{ fontSize: 22, color: "var(--faint)" }}>
+                  {e.n}
+                </span>
+                <span className="label">{e.k}</span>
+              </div>
+              <div style={{ marginTop: 20, height: 150, background: "var(--dark)", borderRadius: "var(--radius)", overflow: "hidden" }}>
+                <DitherArt shape={e.shape} invert gap={4} className="h-full w-full" />
+              </div>
+              <h3 style={{ fontSize: 22, marginTop: 22 }}>{e.t}</h3>
+              <p style={{ marginTop: 12, color: "var(--muted)", fontSize: 13.5, lineHeight: 1.7 }}>{e.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---- WHAT IT'S FOR (value-prop bento) ---- */}
+      <section className="mx-auto max-w-6xl px-6" style={{ padding: "0 24px clamp(72px, 12vw, 140px)" }}>
+        <div className="label" style={{ marginBottom: 10 }}>
+          {"// why it exists"}
+        </div>
+        <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", maxWidth: "20ch" }}>
+          The trust gap RWA deserves better than.
+        </h2>
+
+        <div className="bento" style={{ marginTop: 56 }}>
+          {/* 01 — feature cell: immutable attestation ledger */}
+          <div className="bento-cell bento-lg scan">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span className="pixel" style={{ fontSize: 22, color: "var(--faint)" }}>
+                01
+              </span>
+              <span className="label">immutable attestations</span>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                minHeight: 180,
+                marginTop: 22,
+                background: "var(--dark)",
+                borderRadius: "var(--radius)",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <DitherArt shape="signal" invert gap={4} className="h-full w-full" />
+            </div>
+            <h3 style={{ fontSize: 26, marginTop: 24 }}>Attestations stay on the record.</h3>
+            <p style={{ marginTop: 12, color: "var(--muted)", fontSize: 14, lineHeight: 1.7, maxWidth: "46ch" }}>
+              A real-estate yield or a licensing fee is only as good as the proving of it. The agent&apos;s verified income call is signed and hashed on-chain — the evidence chain behind every distribution is linkable, not a claim.
+            </p>
+            <div className="bento-flag">
+              <span className="db-mark">SIGNED</span>
+              <span className="label" style={{ color: "var(--loss)" }}>
+                by the agent, on-chain
+              </span>
+            </div>
+          </div>
+
+          {/* 02 — verified source */}
+          <div className="bento-cell bento-sm scan">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span className="pixel" style={{ fontSize: 22, color: "var(--faint)" }}>
+                02
+              </span>
+              <span className="label">named source</span>
+            </div>
+            <h3 style={{ fontSize: 21, marginTop: 20 }}>Verified against a real source.</h3>
+            <p style={{ marginTop: 12, color: "var(--muted)", fontSize: 13.5, lineHeight: 1.7 }}>
+              No &ldquo;trust us&rdquo; dashboard. The income events come from a named, public source the config names — and the agent&apos;s verification is itself attested.
+            </p>
+            <div style={{ marginTop: "auto", paddingTop: 18 }}>
+              <span className="chip">source · env-named</span>
+            </div>
+          </div>
+
+          {/* 03 — real execution */}
+          <div className="bento-cell bento-sm scan">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span className="pixel" style={{ fontSize: 22, color: "var(--faint)" }}>
+                03
+              </span>
+              <span className="label">real txns</span>
+            </div>
+            <h3 style={{ fontSize: 21, marginTop: 20 }}>Nothing on this page is simulated.</h3>
+            <p style={{ marginTop: 12, color: "var(--muted)", fontSize: 13.5, lineHeight: 1.7 }}>
+              Every balance, distribution, and attestation is a live BOT Chain read. Open any hash in the explorer and the money is there.
+            </p>
+            <div style={{ marginTop: "auto", paddingTop: 18 }}>
+              <span className="chip">live · chain 968</span>
+            </div>
+          </div>
+
+          {/* 04 — full-width banner: a new way to participate */}
+          <div className="bento-cell bento-wide scan" style={{ padding: 0 }}>
+            <div style={{ display: "flex", alignItems: "stretch", flexWrap: "wrap" }}>
+              <div style={{ flex: "1 1 340px", padding: "28px 26px 30px", display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span className="pixel" style={{ fontSize: 22, color: "var(--faint)" }}>
+                    04
+                  </span>
+                  <span className="label">participate</span>
+                </div>
+                <h3 style={{ fontSize: 24, marginTop: 20 }}>A share of attested income.</h3>
+                <p style={{ marginTop: 12, color: "var(--muted)", fontSize: 14, lineHeight: 1.7, maxWidth: "54ch" }}>
+                  Buy shares with WBOT at face value,{" "}
+                  <em style={{ fontStyle: "normal", color: "var(--gain)" }}>earn</em> pro-rata from{" "}
+                  <em style={{ fontStyle: "normal", color: "var(--loss)" }}>attested</em> income, and redeem principal whenever you like. The pool, the payouts, and the proof are all on-chain.
+                </p>
+                <div style={{ marginTop: "auto", paddingTop: 18 }}>
+                  <Link href="/portfolio" className="chip" style={{ textDecoration: "none" }}>
+                    participate ↗
+                  </Link>
+                </div>
+              </div>
+              <div style={{ flex: "1 1 300px", minHeight: 220, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "end" }}>
+                <DitherArt shape="arrows" invert gap={4} className="h-full w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer
+        className="mx-auto max-w-6xl px-6"
+        style={{ padding: "28px 24px 48px", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}
+      >
+        <span className="pixel" style={{ color: "var(--faint)" }}>
+          <span className="kol">DO</span>LEAI
+        </span>
+        <span className="label">the income is attested · live on-chain reads, zero simulation</span>
+      </footer>
     </main>
   );
 }
